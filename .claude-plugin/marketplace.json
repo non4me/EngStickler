@@ -4,12 +4,12 @@
     "name": "non4me",
     "url": "https://github.com/non4me"
   },
-  "description": "EngStickler: correct technical English from an agent you talk to in your own language.",
+  "description": "EngStickler makes an agent you talk to in your own language write correct technical English.",
   "plugins": [
     {
       "name": "engstickler",
       "source": "./",
-      "description": "Readers that check the agent's English, its meaning, and the errors it made before."
+      "description": "Reader agents check the writing agent's English and its meaning; the writing agent sees its earlier errors at the start of each session."
     }
   ]
 }
