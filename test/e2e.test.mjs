@@ -108,7 +108,7 @@ test("stop: text changed by hand, with no command of the agent, is not sent", ()
   assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out, null);
 });
 
-test("stop: the readers run in the background; a response is stopped once, and its English stays unread until checked", () => {
+test("stop: the readers run in the background; the end of a response is held back once, and its English stays unread until marked as read", () => {
   const ctx = setup();
   hook(ctx, "session-start", { source: "startup" });
   const guide = path.join(ctx.proj, "docs", "guide.md");
@@ -119,12 +119,12 @@ test("stop: the readers run in the background; a response is stopped once, and i
   assert.equal(first.decision, "block");
   assert.match(first.reason, /in the background/);
   assert.match(first.reason, /checked s1 1\b/);
-  // The agent has started the readers and ends its response: the second stop passes.
+  // The agent has started the readers and ends its response: the second run of the stop hook lets the response end.
   assert.equal(hook(ctx, "stop", { stop_hook_active: true }).out, null);
-  // A later response that writes nothing new is not stopped for the batch still being read.
+  // The batch that is still being read does not hold back a later response that writes nothing new.
   assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out, null);
   assert.match(es(ctx, ["pending", "s1"]), /guide\.md/);
-  // New English goes to a batch of its own; the first batch's chunk is kept for the readers still reading it.
+  // New English text goes into a batch of its own; the first batch's chunk is kept for the readers still reading it.
   const firstChunk = first.reason.match(/- (\S+fast-1\.md)/)[1];
   paras[9] = "Paragraph nine was written while the first batch was being read.";
   script(ctx, guide, paras.join("\n\n") + "\n");
@@ -142,7 +142,7 @@ test("stop: the readers run in the background; a response is stopped once, and i
   assert.match(es(ctx, ["pending", "s1"]), /Nothing unread/);
 });
 
-test("stop: a sentence fixed after the readers' findings is read once more; a fix of that fix is accepted", () => {
+test("stop: a sentence fixed in response to the readers' findings is read once more; a fix of that fix is accepted", () => {
   const ctx = setup();
   hook(ctx, "session-start", { source: "startup" });
   const guide = path.join(ctx.proj, "docs", "guide.md");
@@ -162,7 +162,7 @@ test("stop: a sentence fixed after the readers' findings is read once more; a fi
   script(ctx, guide, paras.join("\n\n") + "\n");
   es(ctx, ["checked", "s1"]);
   assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out, null);
-  // A new paragraph unlike any read before is read as usual.
+  // A new paragraph unlike any paragraph read before is read as usual.
   paras[12] = "Commit messages get their own check before the commit is made.";
   script(ctx, guide, paras.join("\n\n") + "\n");
   assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out.decision, "block");

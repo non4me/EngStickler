@@ -21,7 +21,7 @@ the text of pull requests and issues.
   | Check | Checked by | When |
   |---|---|---|
   | Instant | a script: known calques and over-long sentences | after every edit |
-  | Fast | the fast reader, in the background | at the end of each response in which the agent wrote English; a commit waits for it |
+  | Fast | the fast reader, in the background | at the end of each response in which the agent wrote English; a commit is held back until the fast reader has reported |
   | Thorough | the fast reader and the thorough reader, in parallel | before a push, and after a change to the writing agent's instruction files, such as `CLAUDE.md` |
 
 - **Learning from errors.** Every error the writing agent confirms goes into an error log. At the start of each session, the
@@ -36,8 +36,8 @@ background and ends the response without waiting, so the user does not wait for 
 the agent fixes what they found and marks the batch as read. A commit or a push is held back until every batch
 of the session is marked as read.
 
-A sentence the agent fixed after the readers' findings is read once more. A further fix of that sentence is
-accepted without another reading, so that fixes do not send the text to the readers again and again.
+A sentence the agent fixed in response to the readers' findings is read once more. A further fix of that sentence is
+recorded as read without another reading, so that fixes do not send the text to the readers again and again.
 
 The hooks watch only what the writing agent touches: the files it edits, and the files changed by a
 command it runs. The text that already exists in a project is recorded once, the first time a session starts

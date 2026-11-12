@@ -37,18 +37,18 @@ function procedure() {
     `EngStickler checks every English text you write for this user, who talks to you in ${lang.name}.`,
     `Write English that says what the user means; never translate word for word from ${lang.name}.`,
     "",
-    'When a hook stops your response, a commit or a push with a reason that begins "EngStickler:":',
-    "1. Start the readers on each chunk file the reason names, in the background, and end your response without waiting for them: " +
-      "the agent `engstickler:reader` on a fast chunk; `engstickler:reader` and `engstickler:reader-thorough` in parallel on a thorough chunk. " +
-      "The reason says what to give them. Take up their reports when they arrive.",
+    'When a hook holds back your response, a commit or a push with a message that begins "EngStickler:":',
+    "1. Start the readers on each chunk file the hook's message names, in the background: " +
+      "the agent `engstickler:reader` on a chunk for the fast check; `engstickler:reader` and `engstickler:reader-thorough` in parallel on a chunk for the thorough check. " +
+      "The message says what to give them. End your response without waiting for them, and act on their reports when they arrive.",
     `2. Compare each reader's ${lang.name} translation with what you meant. Where they agree, keep the English. ` +
-      "Where they differ, or a reader reports a phrase that reads two ways or that a native writer would not use, rewrite the English. " +
-      "Search the other files EngStickler checks for each flagged phrase and fix every occurrence.",
+      "Where they differ, or where a reader reports a phrase that reads two ways or that a native writer would not use, rewrite the English. " +
+      "Search for each flagged phrase in the other files that EngStickler checks, and fix every occurrence.",
     "3. Never change the meaning the user intended without the user's agreement: propose such a change instead. " +
       "You may reject a finding you judge to be a false alarm, but give your reason.",
     `4. Log every error you confirmed: pipe a JSON array of objects with the keys "phrase", "correction", ` +
       `"kind" (calque, collocation, ambiguity or grammar), "file" and "check" (fast or thorough) to: node "${es}" log`,
-    "5. Mark the batch as read with the command the reason gives.",
+    "5. Mark the batch as read with the command the hook's message gives.",
     "A commit or a push waits until every batch is marked as read. Before you show the user a text for their approval, wait for its readers too.",
     "In your answer to the user, say in one short line what was fixed. Do not show the findings.",
   ];
@@ -156,10 +156,10 @@ async function main() {
     if (open.length && (isCommit(cmd) || isPush(cmd))) {
       return deny(
         [
-          `EngStickler: the English of batch ${open.join(", ")} has not been read, or the readers' findings on it are not settled.`,
-          "Wait for the readers, and fix what they report as the EngStickler procedure says. Then mark each batch as read with:",
+          `EngStickler: the English of ${open.length > 1 ? "batches" : "batch"} ${open.join(", ")} has not been read, or the readers' findings on that English are not settled.`,
+          "Wait for the readers, and fix what they report, as the EngStickler procedure says. Then mark each batch as read with:",
           ...open.map((n) => `node "${es}" checked ${id} ${n}`),
-          "After that, run the command again.",
+          "After that, run the commit or the push again.",
         ].join("\n"),
       );
     }
