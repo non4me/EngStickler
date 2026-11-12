@@ -108,14 +108,80 @@ test("stop: text changed by hand, with no command of the agent, is not sent", ()
   assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out, null);
 });
 
-test("stop: the third stop in one response passes silently and accepts the last fixes", () => {
+test("stop: the readers run in the background; a response is stopped once, and its English stays unread until checked", () => {
   const ctx = setup();
   hook(ctx, "session-start", { source: "startup" });
-  script(ctx, path.join(ctx.proj, "docs", "guide.md"), "A new first paragraph that nobody has read yet.\n");
-  assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out.decision, "block");
-  assert.equal(hook(ctx, "stop", { stop_hook_active: true }).out.decision, "block");
+  const guide = path.join(ctx.proj, "docs", "guide.md");
+  const paras = [...ctx.paras];
+  paras[1] = "A new second paragraph that nobody has read yet.";
+  script(ctx, guide, paras.join("\n\n") + "\n");
+  const first = hook(ctx, "stop", { stop_hook_active: false }).out;
+  assert.equal(first.decision, "block");
+  assert.match(first.reason, /in the background/);
+  assert.match(first.reason, /checked s1 1\b/);
+  // The agent has started the readers and ends its response: the second stop passes.
   assert.equal(hook(ctx, "stop", { stop_hook_active: true }).out, null);
+  // A later response that writes nothing new is not stopped for the batch still being read.
   assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out, null);
+  assert.match(es(ctx, ["pending", "s1"]), /guide\.md/);
+  // New English goes to a batch of its own; the first batch's chunk is kept for the readers still reading it.
+  const firstChunk = first.reason.match(/- (\S+fast-1\.md)/)[1];
+  paras[9] = "Paragraph nine was written while the first batch was being read.";
+  script(ctx, guide, paras.join("\n\n") + "\n");
+  const second = hook(ctx, "stop", { stop_hook_active: false }).out;
+  assert.match(second.reason, /checked s1 2\b/);
+  const secondChunk = second.reason.match(/- (\S+fast-1\.md)/)[1];
+  assert.notEqual(secondChunk, firstChunk);
+  assert.match(fs.readFileSync(firstChunk, "utf8"), /new second paragraph/);
+  const text = fs.readFileSync(secondChunk, "utf8");
+  assert.match(text, /while the first batch was being read/);
+  assert.doesNotMatch(text, /new second paragraph/);
+  es(ctx, ["checked", "s1", "1"]);
+  assert.match(es(ctx, ["pending", "s1"]), /guide\.md/);
+  es(ctx, ["checked", "s1", "2"]);
+  assert.match(es(ctx, ["pending", "s1"]), /Nothing unread/);
+});
+
+test("stop: a sentence fixed after the readers' findings is read once more; a fix of that fix is accepted", () => {
+  const ctx = setup();
+  hook(ctx, "session-start", { source: "startup" });
+  const guide = path.join(ctx.proj, "docs", "guide.md");
+  const paras = [...ctx.paras];
+  paras[4] = "The readers check every paragraph which the agent writes for the user.";
+  script(ctx, guide, paras.join("\n\n") + "\n");
+  assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out.decision, "block");
+  // The agent fixes the sentence the readers flagged, then marks the batch as read.
+  paras[4] = "The readers check every paragraph that the agent writes for the user.";
+  script(ctx, guide, paras.join("\n\n") + "\n");
+  es(ctx, ["checked", "s1"]);
+  const reread = hook(ctx, "stop", { stop_hook_active: false }).out;
+  assert.equal(reread.decision, "block");
+  assert.match(fs.readFileSync(reread.reason.match(/- (\S+fast-1\.md)/)[1], "utf8"), /that the agent writes/);
+  // The fix of the fix is accepted without another reading.
+  paras[4] = "The readers check each paragraph that the agent writes for the user.";
+  script(ctx, guide, paras.join("\n\n") + "\n");
+  es(ctx, ["checked", "s1"]);
+  assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out, null);
+  // A new paragraph unlike any read before is read as usual.
+  paras[12] = "Commit messages get their own check before the commit is made.";
+  script(ctx, guide, paras.join("\n\n") + "\n");
+  assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out.decision, "block");
+});
+
+test("pre-bash: a commit and a push wait until every batch of the session has been marked as read", () => {
+  const ctx = setup();
+  hook(ctx, "session-start", { source: "startup" });
+  script(ctx, path.join(ctx.proj, "docs", "guide.md"), "A paragraph whose readers have not reported yet.\n");
+  assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out.decision, "block");
+  const msg = "Guide: a paragraph whose readers have not reported yet";
+  es(ctx, ["checked-commit", "s1"], msg);
+  const cmd = `git commit -am "${msg}"`;
+  const denied = hook(ctx, "pre-bash", { tool_name: "Bash", tool_input: { command: cmd } }).out;
+  assert.equal(denied.hookSpecificOutput.permissionDecision, "deny");
+  assert.match(denied.hookSpecificOutput.permissionDecisionReason, /checked s1 1\b/);
+  assert.equal(hook(ctx, "pre-bash", { tool_name: "Bash", tool_input: { command: "git push" } }).out.hookSpecificOutput.permissionDecision, "deny");
+  es(ctx, ["checked", "s1", "1"]);
+  assert.equal(hook(ctx, "pre-bash", { tool_name: "Bash", tool_input: { command: cmd } }).out, null);
 });
 
 test("pre-edit: another session's unread English is never absorbed", () => {
@@ -130,7 +196,7 @@ test("pre-edit: another session's unread English is never absorbed", () => {
     encoding: "utf8",
   });
   assert.equal(other.status, 0);
-  assert.equal(hook(ctx, "stop", { stop_hook_active: true }).out.decision, "block");
+  assert.match(es(ctx, ["pending", "s1"]), /guide\.md/);
 });
 
 test("post-bash: a checkout brings in a teammate's text, which is not sent to the readers", () => {

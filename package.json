@@ -1,6 +1,6 @@
 {
   "name": "engstickler",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "A Claude Code plugin that keeps the English an agent writes correct and faithful to what the user meant.",
   "type": "module",

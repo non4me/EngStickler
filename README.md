@@ -21,16 +21,23 @@ the text of pull requests and issues.
   | Check | Checked by | When |
   |---|---|---|
   | Instant | a script: known calques and over-long sentences | after every edit |
-  | Fast | the fast reader | at the end of each response in which the agent wrote English, and before a commit |
+  | Fast | the fast reader, in the background | at the end of each response in which the agent wrote English; a commit waits for it |
   | Thorough | the fast reader and the thorough reader, in parallel | before a push, and after a change to the writing agent's instruction files, such as `CLAUDE.md` |
 
 - **Learning from errors.** Every error the writing agent confirms goes into an error log. At the start of each session, the
   writing agent is warned about the errors it has made most often.
 
 EngStickler's hooks in Claude Code never call a model themselves. A hook finds the English text that changed
-and writes it to chunk files, small files that hold the changed passages for the readers. Then it holds back
-the response, the commit or the push, and tells the writing agent which readers to run. The work goes on once
-the readers have run.
+and writes it to chunk files, small files that contain the changed passages for the readers. The chunks of one
+response form a batch.
+
+At the end of a response, the hook tells the writing agent which readers to start. The agent starts them in the
+background and ends the response without waiting, so the user does not wait for the readers. When they report,
+the agent fixes what they found and marks the batch as read. A commit or a push is held back until every batch
+of the session is marked as read.
+
+A sentence the agent fixed after the readers' findings is read once more. A further fix of that sentence is
+accepted without another reading, so that fixes do not send the text to the readers again and again.
 
 The hooks watch only what the writing agent touches: the files it edits, and the files changed by a
 command it runs. The text that already exists in a project is recorded once, the first time a session starts
@@ -103,7 +110,8 @@ or a benchmark, English written by speakers of that language is still checked by
 
 `node scripts/es.mjs <command>`:
 
-- `checked <session>` records that the readers have read the changed passages of a response;
+- `checked <session> [batch]...` records that the readers have read the given batches, or every open batch of
+  the session when no batch is given;
 - `checked-commit <session>` records that a commit message has been read;
 - `checked-push <session>` records that the commits of a push have had the thorough check;
 - `log` appends confirmed errors, read from standard input, to the error log;

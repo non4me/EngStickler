@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// EngStickler's commands for the agent: checked | checked-commit | checked-push | log | warnings | pending | bench-grade.
+// EngStickler's commands for the agent: checked [batch] | checked-commit | checked-push | log | warnings | pending | bench-grade.
 import fs from "node:fs";
 import path from "node:path";
 import { loadConfig } from "../lib/config.mjs";
 import { markChecked, messageKey, sessionDir } from "../lib/store.mjs";
-import { acceptListed, collectPending, projectRoot } from "../lib/pending.mjs";
+import { closeBatches, collectPending, projectRoot } from "../lib/pending.mjs";
 import { appendErrors, warnings } from "../lib/log.mjs";
 import { useLanguage } from "../lib/extract.mjs";
 
@@ -23,8 +23,8 @@ const [cmd, ...args] = process.argv.slice(2);
 
 switch (cmd) {
   case "checked": {
-    if (!args[0]) throw new Error("usage: es.mjs checked <session id>");
-    console.log(`EngStickler: ${acceptListed(args[0], env)} file(s) marked as read.`);
+    if (!args[0]) throw new Error("usage: es.mjs checked <session id> [batch]...");
+    console.log(`EngStickler: ${closeBatches(args[0], args.slice(1), env)} batch(es) marked as read.`);
     break;
   }
   case "checked-commit": {
@@ -65,6 +65,6 @@ switch (cmd) {
     break;
   }
   default:
-    console.log("usage: es.mjs checked <session> | checked-commit <session> | checked-push <session> | log | warnings [n] | pending [session] | bench-grade <report>...");
+    console.log("usage: es.mjs checked <session> [batch]... | checked-commit <session> | checked-push <session> | log | warnings [n] | pending [session] | bench-grade <report>...");
     process.exitCode = 1;
 }

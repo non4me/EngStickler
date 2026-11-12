@@ -1,6 +1,6 @@
 {
   "name": "engstickler",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Makes sure that the technical English your agent writes is correct and says what you meant, when you talk to the agent in a language other than English.",
   "author": {
     "name": "non4me",

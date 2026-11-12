@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { loadConfig, classify, expandHome, stateDir } from "../lib/config.mjs";
 import { languageInfo, listLanguages } from "../lib/languages.mjs";
 import { getSession, saveSession, newSession, updateSession, isChecked, markChecked, messageKey, sessionDir, knownPassages, passageKey, unreadFiles, keyOf } from "../lib/store.mjs";
-import { ensureSetUp, absorb, changedSince, loadSession, collectPending, writeChunks, recordListed, acceptPending, projectRoot } from "../lib/pending.mjs";
+import { ensureSetUp, absorb, changedSince, loadSession, collectPending, writeChunks, withDepth, openBatch, acceptPending, projectRoot } from "../lib/pending.mjs";
 import { loadCalques, instantFindings, formatInstant } from "../lib/instant.mjs";
 import { isCommit, isPush, movesHead, commitMessage, pushTarget, pushPending } from "../lib/git.mjs";
 import { isEnglishProse, passages, jsonStrings, useLanguage } from "../lib/extract.mjs";
@@ -38,8 +38,9 @@ function procedure() {
     `Write English that says what the user means; never translate word for word from ${lang.name}.`,
     "",
     'When a hook stops your response, a commit or a push with a reason that begins "EngStickler:":',
-    "1. Run the readers on each chunk file the reason names: the agent `engstickler:reader` on a fast chunk; " +
-      "`engstickler:reader` and `engstickler:reader-thorough` in parallel on a thorough chunk. The reason says what to give them.",
+    "1. Start the readers on each chunk file the reason names, in the background, and end your response without waiting for them: " +
+      "the agent `engstickler:reader` on a fast chunk; `engstickler:reader` and `engstickler:reader-thorough` in parallel on a thorough chunk. " +
+      "The reason says what to give them. Take up their reports when they arrive.",
     `2. Compare each reader's ${lang.name} translation with what you meant. Where they agree, keep the English. ` +
       "Where they differ, or a reader reports a phrase that reads two ways or that a native writer would not use, rewrite the English. " +
       "Search the other files EngStickler checks for each flagged phrase and fix every occurrence.",
@@ -47,7 +48,8 @@ function procedure() {
       "You may reject a finding you judge to be a false alarm, but give your reason.",
     `4. Log every error you confirmed: pipe a JSON array of objects with the keys "phrase", "correction", ` +
       `"kind" (calque, collocation, ambiguity or grammar), "file" and "check" (fast or thorough) to: node "${es}" log`,
-    "5. Mark the chunks as read with the command the reason gives, and go on.",
+    "5. Mark the batch as read with the command the reason gives.",
+    "A commit or a push waits until every batch is marked as read. Before you show the user a text for their approval, wait for its readers too.",
     "In your answer to the user, say in one short line what was fixed. Do not show the findings.",
   ];
   const w = warnings(cfg.limits.warnings, env);
@@ -118,28 +120,31 @@ async function main() {
   }
 
   if (event === "stop") {
+    // The readers run in the background, so the end of a response is held back at most once, for the agent to start them.
+    if (input.stop_hook_active) return;
     const s = loadSession(id, env);
-    const round = input.stop_hook_active ? s.round : 0;
-    const pending = collectPending({ sessionId: id, cwd, cfg, env });
-    if (!pending.length || round >= cfg.limits.rounds) {
-      // Nothing unread, or the last round's fixes, which the agent resolves on its own: accepted as they are.
-      if (pending.length) acceptPending(pending, env);
-      updateSession(id, (x) => Object.assign(x, { round: 0, listed: {}, touched: [], changed: [] }), env);
-      return;
-    }
-    const chunks = writeChunks(pending, path.join(sessionDir(id, env), "chunks"), cfg.limits.chunkWords);
-    const listed = recordListed(id, pending, env);
-    updateSession(id, (x) => Object.assign(x, { round: round + 1, listed }), env);
+    const pending = withDepth(collectPending({ sessionId: id, cwd, cfg, env }), s);
+    const part = (keep) => pending.map((f) => ({ ...f, passages: f.passages.filter((p) => keep(p.depth)) })).filter((f) => f.passages.length);
+    // A fix of a fix that was already read again is accepted as it is.
+    acceptPending(part((d) => d > cfg.limits.rereads), env);
+    const toRead = part((d) => d <= cfg.limits.rereads);
+    updateSession(id, (x) => Object.assign(x, { touched: [], changed: [] }), env);
+    if (!toRead.length) return;
+    const dir = path.join(sessionDir(id, env), "chunks");
+    const n = openBatch(id, toRead, dir, env);
+    const chunks = writeChunks(toRead, path.join(dir, `b${n}`), cfg.limits.chunkWords);
     const fast = chunks.filter((c) => !c.thorough);
     const thorough = chunks.filter((c) => c.thorough);
     const reason = [
-      `EngStickler: the English written in this response has not been read yet (round ${round + 1} of ${cfg.limits.rounds}).`,
+      `EngStickler: the English written in this response has not been read yet (batch ${n}).`,
+      "Start the readers in the background (run_in_background), and do not wait for them.",
       fast.length ? `Fast check: run engstickler:reader on each of:\n${fast.map((c) => `- ${c.file} (${c.words} words)`).join("\n")}` : "",
       thorough.length
         ? `Thorough check (instruction files): run engstickler:reader and engstickler:reader-thorough in parallel on each of:\n${thorough.map((c) => `- ${c.file} (${c.words} words)`).join("\n")}`
         : "",
       readerBrief(projectRoot(cwd)),
-      `Then follow the EngStickler procedure given at the start of the session, and mark the chunks as read with: node "${es}" checked ${id}`,
+      "Then end your response.",
+      `When the readers report, follow the EngStickler procedure given at the start of the session, and mark the batch as read with: node "${es}" checked ${id} ${n}`,
     ].filter(Boolean);
     return print({ decision: "block", reason: reason.join("\n") });
   }
@@ -147,6 +152,17 @@ async function main() {
   if (event === "pre-bash") {
     const cmd = ti.command ?? "";
     const deny = (reason) => print({ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: reason } });
+    const open = Object.keys(loadSession(id, env).batches ?? {});
+    if (open.length && (isCommit(cmd) || isPush(cmd))) {
+      return deny(
+        [
+          `EngStickler: the English of batch ${open.join(", ")} has not been read, or the readers' findings on it are not settled.`,
+          "Wait for the readers, and fix what they report as the EngStickler procedure says. Then mark each batch as read with:",
+          ...open.map((n) => `node "${es}" checked ${id} ${n}`),
+          "After that, run the command again.",
+        ].join("\n"),
+      );
+    }
     // The time before the command: a file it changes is found by its date afterwards.
     updateSession(id, (x) => Object.assign(x, { bashSince: x.bashSince ?? Date.now() }), env);
     const dir = sessionDir(id, env);
