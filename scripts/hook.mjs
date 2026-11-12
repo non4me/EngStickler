@@ -6,11 +6,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadConfig, classify, expandHome, stateDir } from "../lib/config.mjs";
 import { languageInfo, listLanguages } from "../lib/languages.mjs";
-import { getBaseline, setBaseline, getSession, saveSession, newSession, updateSession, isChecked, markChecked, messageKey, sessionDir } from "../lib/store.mjs";
-import { refreshBaselines, loadSession, collectPending, writeChunks, recordListed, acceptPending, projectRoot } from "../lib/pending.mjs";
+import { getSession, saveSession, newSession, updateSession, isChecked, markChecked, messageKey, sessionDir, knownPassages, passageKey, unreadFiles, keyOf } from "../lib/store.mjs";
+import { ensureSetUp, absorb, changedSince, loadSession, collectPending, writeChunks, recordListed, acceptPending, projectRoot } from "../lib/pending.mjs";
 import { loadCalques, instantFindings, formatInstant } from "../lib/instant.mjs";
 import { isCommit, isPush, movesHead, commitMessage, pushTarget, pushPending } from "../lib/git.mjs";
-import { isEnglishProse, passages, changedPassages, jsonStrings, useLanguage } from "../lib/extract.mjs";
+import { isEnglishProse, passages, jsonStrings, useLanguage } from "../lib/extract.mjs";
 import { warnings } from "../lib/log.mjs";
 
 const env = process.env;
@@ -56,11 +56,11 @@ function procedure() {
 }
 
 // The prose of an edit's new text that the instant check reads: comments in code, strings in JSON,
-// and, for a whole file written at once, only the passages it changed.
+// and, for a whole file written at once, only the passages that are not known.
 function editProse(abs, c, ti) {
   if (typeof ti.content === "string") {
-    const base = getBaseline(abs, env);
-    return changedPassages(base?.text ?? "", ti.content, c.kind);
+    const known = knownPassages(env);
+    return passages(ti.content, c.kind).filter((p) => !known.has(passageKey(p.text)));
   }
   const fragments = [ti.new_string, ...(ti.edits ?? []).map((e) => e.new_string)].filter((x) => typeof x === "string");
   return fragments.flatMap((f) => (c.kind === "json" ? jsonStrings(f).filter((p) => isEnglishProse(p.text)) : passages(f, c.kind)));
@@ -86,7 +86,8 @@ async function main() {
   if (event === "session-start") {
     const fresh = input.source === "startup" || input.source === "clear" || !input.source;
     if (fresh || !getSession(id, env)) saveSession(id, newSession(), env);
-    if (fresh) refreshBaselines(cwd, cfg, env);
+    // The first session in a project, and the first one at all, record the text that already exists.
+    ensureSetUp(cwd, cfg, env);
     return print({ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: procedure() } });
   }
 
@@ -95,11 +96,12 @@ async function main() {
     if (!p) return;
     const abs = path.resolve(cwd, p);
     if (!classify(abs, cfg, { cwd, env })) return;
-    updateSession(id, (s) => (s.touched.includes(abs) ? s : (s.touched.push(abs), s)), env);
-    if (!getBaseline(abs, env)) {
-      if (fs.existsSync(abs)) setBaseline(abs, fs.readFileSync(abs, "utf8"), fs.statSync(abs).mtimeMs, env);
-      else setBaseline(abs, "", 0, env);
-    }
+    const s = loadSession(id, env);
+    const seen = [...s.touched, ...(s.changed ?? [])].some((x) => keyOf(x) === keyOf(abs));
+    // The first time the agent touches a file, its text so far is not the agent's: it becomes known,
+    // unless some session is still waiting for its English to be read.
+    if (!seen && !unreadFiles(env)[keyOf(abs)] && fs.existsSync(abs)) absorb([abs], cfg, { cwd, env });
+    if (!seen) updateSession(id, (x) => (x.touched.push(abs), x), env);
     return;
   }
 
@@ -116,14 +118,13 @@ async function main() {
   }
 
   if (event === "stop") {
-    const scanStart = Date.now();
     const s = loadSession(id, env);
     const round = input.stop_hook_active ? s.round : 0;
     const pending = collectPending({ sessionId: id, cwd, cfg, env });
     if (!pending.length || round >= cfg.limits.rounds) {
       // Nothing unread, or the last round's fixes, which the agent resolves on its own: accepted as they are.
       if (pending.length) acceptPending(pending, env);
-      updateSession(id, (x) => Object.assign(x, { round: 0, since: scanStart, listed: {} }), env);
+      updateSession(id, (x) => Object.assign(x, { round: 0, listed: {}, touched: [], changed: [] }), env);
       return;
     }
     const chunks = writeChunks(pending, path.join(sessionDir(id, env), "chunks"), cfg.limits.chunkWords);
@@ -146,7 +147,8 @@ async function main() {
   if (event === "pre-bash") {
     const cmd = ti.command ?? "";
     const deny = (reason) => print({ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: reason } });
-    if (IMPORTS_TEXT.test(cmd)) updateSession(id, (x) => Object.assign(x, { gitOpStart: Date.now() }), env);
+    // The time before the command: a file it changes is found by its date afterwards.
+    updateSession(id, (x) => Object.assign(x, { bashSince: x.bashSince ?? Date.now() }), env);
     const dir = sessionDir(id, env);
     if (isCommit(cmd)) {
       const parsed = commitMessage(cmd, cwd);
@@ -198,10 +200,23 @@ async function main() {
 
   if (event === "post-bash") {
     const cmd = ti.command ?? "";
-    if (!IMPORTS_TEXT.test(cmd)) return;
-    // A checkout, pull, merge or the like brought in text the agent did not write: it becomes the baseline unread.
-    const since = loadSession(id, env).gitOpStart ?? Date.now();
-    refreshBaselines(cwd, cfg, env, { since: since - 2000 });
+    const s = loadSession(id, env);
+    const scanStart = Date.now();
+    const since = (s.bashSince ?? s.lastScan ?? scanStart) - 1000;
+    const changed = changedSince(since, cwd, cfg, env);
+    if (IMPORTS_TEXT.test(cmd)) {
+      // A checkout, pull, merge or the like brought in text the agent did not write: it becomes known unread.
+      const unread = unreadFiles(env);
+      absorb(changed.filter((p) => !unread[keyOf(p)]), cfg, { cwd, env });
+    }
+    updateSession(
+      id,
+      (x) => {
+        if (!IMPORTS_TEXT.test(cmd)) for (const p of changed) if (!x.changed.some((y) => keyOf(y) === keyOf(p))) x.changed.push(p);
+        return Object.assign(x, { bashSince: null, lastScan: scanStart });
+      },
+      env,
+    );
   }
 }
 

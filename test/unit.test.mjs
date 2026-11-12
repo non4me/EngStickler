@@ -185,19 +185,25 @@ test("languages: nothing outside languages/ names a language or a language's fil
 
 // Task 4: the store, and Task 5: the log
 
-import { getBaseline, setBaseline, getSession, saveSession, newSession, markChecked, isChecked, messageKey } from "../lib/store.mjs";
+import { getSession, saveSession, newSession, markChecked, isChecked, messageKey, knownPassages, addKnown, passageKey, isSetUp, markSetUp, unreadFiles, markUnread, clearUnread } from "../lib/store.mjs";
 import { appendErrors, warnings } from "../lib/log.mjs";
 import { writeChunks } from "../lib/pending.mjs";
 import { isCommit, isPush, movesHead, commitMessage, pushTarget } from "../lib/git.mjs";
 
-test("store: baselines, sessions and checked marks round-trip; slashes do not matter", () => {
+test("store: known passages, roots, unread files, sessions and checked marks round-trip; slashes do not matter", () => {
   const env = { ENGSTICKLER_HOME: tmp() };
-  setBaseline("C:\\proj\\docs\\a.md", "one", 5, env);
-  setBaseline("C:/proj/docs/a.md", "two", 6, env);
-  const b = getBaseline("c:/proj/docs/a.md", env);
-  assert.equal(b.text, "two");
-  assert.equal(b.mtimeMs, 6);
-  const s = newSession(env);
+  assert.equal(passageKey("A  rule\nis approved."), passageKey("A rule is approved."));
+  addKnown([passageKey("One known passage.")], env);
+  addKnown([passageKey("One known passage."), passageKey("Another one.")], env);
+  assert.equal(knownPassages(env).size, 2);
+  assert.equal(isSetUp("C:\\proj", env), false);
+  markSetUp("C:\\proj", env);
+  assert.equal(isSetUp("c:/proj", env), true);
+  markUnread(["C:\\proj\\docs\\a.md"], "s1", env);
+  assert.equal(Object.values(unreadFiles(env))[0].session, "s1");
+  clearUnread(["c:/proj/docs/a.md"], env);
+  assert.deepEqual(unreadFiles(env), {});
+  const s = newSession();
   s.touched.push("x");
   saveSession("id1", s, env);
   assert.deepEqual(getSession("id1", env).touched, ["x"]);

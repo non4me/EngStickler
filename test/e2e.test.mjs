@@ -73,13 +73,20 @@ test("session start: the procedure for the agent", () => {
   assert.match(out.hookSpecificOutput.additionalContext, /Russian/);
 });
 
-test("stop: a paragraph changed by a script is sent alone; after checked the stop passes", () => {
+// Runs a command the way the agent does: the hooks before and after it, and the command's change between.
+function script(ctx, file, text, command = "node fix.mjs") {
+  hook(ctx, "pre-bash", { tool_name: "Bash", tool_input: { command } });
+  rewrite(file, text);
+  hook(ctx, "post-bash", { tool_name: "Bash", tool_input: { command } });
+}
+
+test("stop: a paragraph a script changed is sent alone; after checked the stop passes", () => {
   const ctx = setup();
   hook(ctx, "session-start", { source: "startup" });
   const guide = path.join(ctx.proj, "docs", "guide.md");
   const paras = [...ctx.paras];
   paras[7] = "Paragraph seven now explains how the readers check the English.";
-  rewrite(guide, paras.join("\n\n") + "\n");
+  script(ctx, guide, paras.join("\n\n") + "\n");
   const { out } = hook(ctx, "stop", { stop_hook_active: false });
   assert.equal(out.decision, "block");
   const chunk = out.reason.match(/- (\S+fast-1\.md)/)[1];
@@ -90,27 +97,35 @@ test("stop: a paragraph changed by a script is sent alone; after checked the sto
   es(ctx, ["checked", "s1"]);
   assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out, null);
   paras[8] = "Paragraph eight is changed again after the check was made.";
-  rewrite(guide, paras.join("\n\n") + "\n");
+  script(ctx, guide, paras.join("\n\n") + "\n");
   assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out.decision, "block");
+});
+
+test("stop: text changed by hand, with no command of the agent, is not sent", () => {
+  const ctx = setup();
+  hook(ctx, "session-start", { source: "startup" });
+  rewrite(path.join(ctx.proj, "docs", "guide.md"), "The user wrote this paragraph by hand between two responses.\n");
+  assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out, null);
 });
 
 test("stop: the third stop in one response passes silently and accepts the last fixes", () => {
   const ctx = setup();
   hook(ctx, "session-start", { source: "startup" });
-  rewrite(path.join(ctx.proj, "docs", "guide.md"), "A new first paragraph that nobody has read yet.\n");
+  script(ctx, path.join(ctx.proj, "docs", "guide.md"), "A new first paragraph that nobody has read yet.\n");
   assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out.decision, "block");
   assert.equal(hook(ctx, "stop", { stop_hook_active: true }).out.decision, "block");
   assert.equal(hook(ctx, "stop", { stop_hook_active: true }).out, null);
   assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out, null);
 });
 
-test("session start: another session's unread English is never absorbed", () => {
+test("pre-edit: another session's unread English is never absorbed", () => {
   const ctx = setup();
   hook(ctx, "session-start", { source: "startup" });
-  rewrite(path.join(ctx.proj, "docs", "guide.md"), "Session one wrote this paragraph and nobody has read it.\n");
+  const guide = path.join(ctx.proj, "docs", "guide.md");
+  script(ctx, guide, "Session one wrote this paragraph and nobody has read it.\n");
   assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out.decision, "block");
-  const other = spawnSync(process.execPath, [HOOK, "session-start"], {
-    input: JSON.stringify({ cwd: ctx.proj, session_id: "s2", source: "startup" }),
+  const other = spawnSync(process.execPath, [HOOK, "pre-edit"], {
+    input: JSON.stringify({ cwd: ctx.proj, session_id: "s2", tool_name: "Edit", tool_input: { file_path: guide } }),
     env: ctx.env,
     encoding: "utf8",
   });
@@ -136,11 +151,10 @@ test("stop: a copied file and files git ignores are not sent to the readers", ()
   const ctx = setup();
   fs.writeFileSync(path.join(ctx.proj, ".gitignore"), "cache/\n");
   hook(ctx, "session-start", { source: "startup" });
-  const copy = path.join(ctx.proj, "docs", "guide-copy.md");
-  fs.copyFileSync(path.join(ctx.proj, "docs", "guide.md"), copy);
-  rewrite(copy, fs.readFileSync(copy, "utf8"));
+  const guide = path.join(ctx.proj, "docs", "guide.md");
+  script(ctx, path.join(ctx.proj, "docs", "guide-copy.md"), fs.readFileSync(guide, "utf8"), "cp docs/guide.md docs/guide-copy.md");
   fs.mkdirSync(path.join(ctx.proj, "cache"), { recursive: true });
-  rewrite(path.join(ctx.proj, "cache", "README.md"), "A tool wrote this cache file and nobody has read it.\n");
+  script(ctx, path.join(ctx.proj, "cache", "README.md"), "A tool wrote this cache file and nobody has read it.\n", "npx some-tool");
   assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out, null);
 });
 
@@ -153,12 +167,25 @@ test("post-edit: code is read for its comments only", () => {
 test("stop: an instruction file goes to the thorough check; a change to code alone passes", () => {
   const ctx = setup();
   hook(ctx, "session-start", { source: "startup" });
-  rewrite(path.join(ctx.proj, "src.js"), "// Reads the configuration of the user.\nconst a = 2;\n");
+  script(ctx, path.join(ctx.proj, "src.js"), "// Reads the configuration of the user.\nconst a = 2;\n");
   assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out, null);
-  rewrite(path.join(ctx.proj, "CLAUDE.md"), "This file now tells the agent where every document of the project is kept.\n");
+  script(ctx, path.join(ctx.proj, "CLAUDE.md"), "This file now tells the agent where every document of the project is kept.\n");
   const { out } = hook(ctx, "stop", { stop_hook_active: false });
   assert.match(out.reason, /thorough-1\.md/);
   assert.doesNotMatch(out.reason, /fast-1\.md/);
+});
+
+test("pre-edit: the text a file had before the agent's first edit is not sent, the agent's text is", () => {
+  const ctx = setup();
+  hook(ctx, "session-start", { source: "startup" });
+  const guide = path.join(ctx.proj, "docs", "guide.md");
+  rewrite(guide, fs.readFileSync(guide, "utf8") + "\nThe user added this paragraph by hand before the session.\n");
+  hook(ctx, "pre-edit", { tool_name: "Edit", tool_input: { file_path: guide } });
+  fs.appendFileSync(guide, "\nThe agent added this paragraph with the edit tool.\n");
+  const { out } = hook(ctx, "stop", { stop_hook_active: false });
+  const text = fs.readFileSync(out.reason.match(/- (\S+fast-1\.md)/)[1], "utf8");
+  assert.match(text, /The agent added this paragraph/);
+  assert.doesNotMatch(text, /The user added this paragraph/);
 });
 
 test("pre-edit and stop: a new file outside the project is read whole", () => {

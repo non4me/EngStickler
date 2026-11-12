@@ -27,10 +27,16 @@ the text of pull requests and issues.
 - **Learning from errors.** Every error the writing agent confirms goes into an error log. At the start of each session, the
   writing agent is warned about the errors it has made most often.
 
-EngStickler's hooks in Claude Code never call a model themselves. A hook finds the English that changed and
-writes it to chunk files: small files of changed passages for the readers. Then it holds back the response,
-the commit or the push until the readers have run, and tells the writing agent which readers to run. A change is detected whether it was made with an edit tool or by a
-script, because each file is compared with the last version the readers read.
+EngStickler's hooks in Claude Code never call a model themselves. A hook finds the English text that changed
+and writes it to chunk files, small files that hold the changed passages for the readers. Then it holds back
+the response, the commit or the push, and tells the writing agent which readers to run. The work goes on once
+the readers have run.
+
+The hooks watch only what the writing agent touches: the files it edits, and the files changed by a
+command it runs. The text that already exists in a project is recorded once, the first time a session starts
+there. The text the readers have read is recorded too. Only passages that are not yet recorded go to the
+readers. So when a script rewrites a whole file but changes one paragraph, only that paragraph goes to the
+readers.
 
 ## Status
 
