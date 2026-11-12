@@ -12,7 +12,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const HOOK = path.join(here, "..", "scripts", "hook.mjs");
 const ES = path.join(here, "..", "scripts", "es.mjs");
 
-function setup() {
+function setup({ language = "ru" } = {}) {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), "es-e2e-"));
   const proj = path.join(base, "proj");
   const env = {
@@ -24,6 +24,8 @@ function setup() {
   };
   fs.mkdirSync(path.join(proj, "docs"), { recursive: true });
   fs.mkdirSync(path.join(base, "home", ".claude"), { recursive: true });
+  fs.mkdirSync(env.ENGSTICKLER_HOME, { recursive: true });
+  if (language) fs.writeFileSync(path.join(env.ENGSTICKLER_HOME, "config.json"), JSON.stringify({ language }));
   fs.writeFileSync(env.GIT_CONFIG_GLOBAL, "[user]\n\tname = Test\n\temail = test@example.com\n[init]\n\tdefaultBranch = main\n");
   const git = (...args) => spawnSync("git", ["-C", proj, ...args], { env, encoding: "utf8" });
   git("init", "-q");
@@ -55,6 +57,14 @@ function rewrite(file, text) {
   const t = new Date(Date.now() + 5000 + ++tick * 1000);
   fs.utimesSync(file, t, t);
 }
+
+test("no language set: the session start says how to set one, and nothing is checked", () => {
+  const ctx = setup({ language: null });
+  const { out } = hook(ctx, "session-start", { source: "startup" });
+  assert.match(out.hookSpecificOutput.additionalContext, /no language is set/);
+  rewrite(path.join(ctx.proj, "docs", "guide.md"), "A paragraph nobody reads, since no language is set.\n");
+  assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out, null);
+});
 
 test("session start: the procedure for the agent", () => {
   const ctx = setup();

@@ -118,16 +118,42 @@ test("passages: code gives its comments, not its code; broken JSON falls back to
   assert.equal(passages("{ not json, but a sentence of plain words here", "json").length, 1);
 });
 
-// Task 2: the calque list and the instant check
+// Task 2: the languages, their calque lists and the instant check
 
-test("calques: the narrowed list is silent on the approved principles and still flags the benchmark", () => {
-  const calques = loadCalques("ru");
-  const principles = fs.readFileSync(new URL("fixtures/principles.md", import.meta.url), "utf8");
-  const found = instantFindings(principles, { calques, sentenceWords: 1000, article: false }).filter((f) => f.type === "calque");
-  assert.deepEqual(found, []);
-  const key = JSON.parse(fs.readFileSync(new URL("../bench/seed-ru/key.json", import.meta.url), "utf8"));
-  const flagged = key.filter((k) => instantFindings(k.was, { calques, sentenceWords: 1000, article: false }).some((f) => f.type === "calque"));
-  assert.ok(flagged.length >= 25, `flagged ${flagged.length}`);
+import { LANGUAGES_DIR, languageFile, listLanguages, languageInfo } from "../lib/languages.mjs";
+
+const readIf = (file) => (fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null);
+
+test("languages: each folder describes its language; its calques compile, stay silent on its clean texts and flag its benchmark", () => {
+  assert.ok(listLanguages().length >= 1);
+  for (const code of listLanguages()) {
+    const info = languageInfo(code);
+    assert.equal(info?.code, code, `languages/${code}/language.json names another code`);
+    assert.ok(info.name, `languages/${code}/language.json has no name`);
+    const calques = loadCalques(code);
+    for (const c of calques) assert.doesNotThrow(() => new RegExp(c.find, "gi"), `${code}: ${c.find}`);
+    const expect = JSON.parse(readIf(languageFile(code, "test", "expect.json")) ?? "{}");
+    for (const name of expect.noFalseAlarms ?? []) {
+      const text = fs.readFileSync(languageFile(code, "test", name), "utf8");
+      const found = instantFindings(text, { calques, sentenceWords: 1000, article: false }).filter((f) => f.type === "calque");
+      assert.deepEqual(found, [], `${code}: false alarms in ${name}`);
+    }
+    const key = readIf(languageFile(code, "benchmark", "key.json"));
+    if (key && expect.calquesFlagBenchmarkAtLeast) {
+      const flagged = JSON.parse(key).filter((k) => instantFindings(k.was, { calques, sentenceWords: 1000, article: false }).some((f) => f.type === "calque"));
+      assert.ok(flagged.length >= expect.calquesFlagBenchmarkAtLeast, `${code}: flagged ${flagged.length}`);
+    }
+  }
+  assert.equal(languageInfo("xx"), null);
+  assert.equal(languageInfo("../lib"), null);
+});
+
+test("languages: nothing outside languages/ names a language or a language's files", () => {
+  const root = path.join(LANGUAGES_DIR, "..");
+  const names = listLanguages().map((c) => languageInfo(c).name);
+  const pattern = new RegExp(`languages[\\\\/](${listLanguages().join("|")})\\b|\\b(${names.join("|")})\\b|-(${listLanguages().join("|")})\\.json`);
+  const files = walk(root, ["lib/**/*.mjs", "scripts/**/*.mjs", "hooks/**/*.json", "agents/**/*.md", ".claude-plugin/*.json", "package.json"]);
+  for (const f of files) assert.doesNotMatch(fs.readFileSync(f, "utf8"), pattern, path.relative(root, f));
 });
 
 // Task 4: the store, and Task 5: the log
@@ -269,7 +295,7 @@ test("manifest and hooks: the plugin is engstickler and every hook calls the one
 });
 
 test("gradeReport: a quoted phrase in the same node and part catches the key items it is in", () => {
-  const key = JSON.parse(fs.readFileSync(new URL("../bench/seed-ru/key.json", import.meta.url), "utf8"));
+  const key = JSON.parse(fs.readFileSync(languageFile("ru", "benchmark", "key.json"), "utf8"));
   const report = [
     "### Node 1.6.1 · text",
     "TRANSLATION: …",
@@ -287,7 +313,7 @@ test("gradeReport: a quoted phrase in the same node and part catches the key ite
 
 test("instant: a long sentence is reported, except in an article; code and links are not words", () => {
   const long = Array.from({ length: 30 }, () => "word").join(" ") + ".";
-  const calques = loadCalques("ru");
+  const calques = [];
   assert.equal(instantFindings(long, { calques, sentenceWords: 25, article: false }).filter((f) => f.type === "long").length, 1);
   assert.equal(instantFindings(long, { calques, sentenceWords: 25, article: true }).length, 0);
   const withCode = "Run `node scripts/es.mjs checked session-id-here` and see https://example.com/very/long/path now.";

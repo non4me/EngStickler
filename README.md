@@ -34,9 +34,13 @@ script, because each file is compared with the last version the readers read.
 
 ## Status
 
-Stage 1: built for its author's own use, with Russian as the user's language. Stage 2 will add a setup interview
-that works for any language a user speaks, an assessment of a project's existing documents, support for
-published glossaries of technical terms, and the user's own style rules.
+Stage 1: the plugin is built for its author's own use. So far, Russian is the only language that has a
+folder in `languages/`. Stage 2 will add a setup interview that configures the plugin for any language the
+user speaks, an assessment of a project's existing documents, and support both for published glossaries of
+technical terms and for the user's own style rules.
+
+The checks recognise text as English by the proportion of Latin letters in it. So they cannot yet tell
+English from another language written in the Latin alphabet, such as Czech. Stage 2 will fix this.
 
 ## Install
 
@@ -61,8 +65,23 @@ plugin in `~/.claude/settings.json`:
 
 The plugin needs Node.js 22 or later and git.
 
-The configuration file is `~/.claude/engstickler/config.json`. Every key is optional. The defaults are in
-`lib/config.mjs`.
+The configuration file is `~/.claude/engstickler/config.json`. It must name the user's language by its
+code, for example `{"language": "ru"}`. Until it does, EngStickler checks nothing. Every other key is
+optional, and the defaults are in `lib/config.mjs`.
+
+## Languages
+
+Everything specific to one of the languages users speak is kept in its own folder, `languages/<code>/`,
+and nowhere else:
+
+- `language.json` names the language;
+- `calques.json` lists the calques found in English written by speakers of that language, each with the
+  form to use instead;
+- `benchmark/` holds texts with known errors, and the answer key that the readers are measured against;
+- `test/` holds texts that the calque list must not flag.
+
+The plugin's source code names no language. To add a language, add its folder. Even without a calque list
+or a benchmark, English written by speakers of that language is still checked by the readers.
 
 ## Commands
 

@@ -32,7 +32,8 @@ Read what any real reader of the text would have read:
 - the nodes or files the passage itself refers to.
 
 Never read the author's own version of a passage in the user's language. That includes fields whose names
-mark a translation, such as `ru`, `ruText`, `ruReason` or `ruTitle`, and text in the user's language next
+mark them as translations, such as a name that is a language code or that starts with one (`cs`,
+`csText`), and text in the user's language next
 to the passage. Do not read the conversation between the author and the user either. If you know what the author meant, you will read that meaning into the
 text and miss the error you are there to find.
 

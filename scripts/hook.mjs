@@ -4,7 +4,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadConfig, classify, expandHome } from "../lib/config.mjs";
+import { loadConfig, classify, expandHome, stateDir } from "../lib/config.mjs";
+import { languageInfo, listLanguages } from "../lib/languages.mjs";
 import { getBaseline, setBaseline, getSession, saveSession, newSession, updateSession, isChecked, markChecked, messageKey, sessionDir } from "../lib/store.mjs";
 import { refreshBaselines, loadSession, collectPending, writeChunks, recordListed, acceptPending, projectRoot } from "../lib/pending.mjs";
 import { loadCalques, instantFindings, formatInstant } from "../lib/instant.mjs";
@@ -14,6 +15,7 @@ import { warnings } from "../lib/log.mjs";
 
 const env = process.env;
 const cfg = loadConfig(env);
+const lang = languageInfo(cfg.language);
 const es = fileURLToPath(new URL("./es.mjs", import.meta.url));
 const terms = cfg.terms.map((t) => expandHome(t, env)).filter((t) => fs.existsSync(t));
 
@@ -25,19 +27,19 @@ const readStdin = async () => {
 const print = (o) => process.stdout.write(JSON.stringify(o));
 
 const readerBrief = (root) =>
-  `Give each reader: the project root ${root}, the chunk file's path, the language to translate into (${cfg.language})` +
+  `Give each reader: the project root ${root}, the chunk file's path, the language to translate into (${lang.name})` +
   (terms.length ? `, and the term files ${terms.join(", ")}` : "") +
   ".";
 
 function procedure() {
   const lines = [
-    `EngStickler checks every English text you write for this user, who talks to you in ${cfg.language}.`,
-    `Write English that says what the user means; never translate word for word from ${cfg.language}.`,
+    `EngStickler checks every English text you write for this user, who talks to you in ${lang.name}.`,
+    `Write English that says what the user means; never translate word for word from ${lang.name}.`,
     "",
     'When a hook stops your response, a commit or a push with a reason that begins "EngStickler:":',
     "1. Run the readers on each chunk file the reason names: the agent `engstickler:reader` on a fast chunk; " +
       "`engstickler:reader` and `engstickler:reader-thorough` in parallel on a thorough chunk. The reason says what to give them.",
-    `2. Compare each reader's ${cfg.language} translation with what you meant. Where they agree, keep the English. ` +
+    `2. Compare each reader's ${lang.name} translation with what you meant. Where they agree, keep the English. ` +
       "Where they differ, or a reader reports a phrase that reads two ways or that a native writer would not use, rewrite the English. " +
       "Search the other files EngStickler checks for each flagged phrase and fix every occurrence.",
     "3. Never change the meaning the user intended without the user's agreement: propose such a change instead. " +
@@ -68,6 +70,14 @@ const IMPORTS_TEXT = /(^|[\s;&|(])git(\.exe)?(\s+-C\s+\S+)?\s+(checkout|switch|p
 async function main() {
   const event = process.argv[2];
   const input = await readStdin();
+  if (!lang) {
+    // With no language set, EngStickler checks nothing; the session start says how to set one.
+    if (event !== "session-start") return;
+    const notice =
+      `EngStickler is installed but checks nothing: no language is set. To set one, write ` +
+      `{"language": "<code>"} to ${path.join(stateDir(env), "config.json")}, where <code> is one of: ${listLanguages().join(", ")}.`;
+    return print({ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: notice } });
+  }
   const id = input.session_id || "default";
   const cwd = input.cwd || process.cwd();
   const ti = input.tool_input ?? {};
@@ -99,7 +109,7 @@ async function main() {
     const c = classify(abs, cfg, { cwd, env });
     if (!c) return;
     const prose = editProse(abs, c, ti).map((x) => x.text).join("\n\n");
-    const found = instantFindings(prose, { calques: loadCalques(cfg.languageCode), sentenceWords: cfg.limits.sentenceWords, article: c.article });
+    const found = instantFindings(prose, { calques: loadCalques(lang.code), sentenceWords: cfg.limits.sentenceWords, article: c.article });
     if (!found.length) return;
     return print({ hookSpecificOutput: { hookEventName: "PostToolUse", additionalContext: formatInstant(found, c.rel) } });
   }

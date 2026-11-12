@@ -1,0 +1,4 @@
+{
+  "noFalseAlarms": ["principles.md"],
+  "calquesFlagBenchmarkAtLeast": 25
+}

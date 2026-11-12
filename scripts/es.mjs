@@ -57,8 +57,9 @@ switch (cmd) {
     break;
   }
   case "bench-grade": {
+    if (!cfg.language) throw new Error("no language is set in the configuration");
     const { gradeFiles } = await import("../lib/bench.mjs");
-    console.log(gradeFiles(args));
+    console.log(gradeFiles(args, cfg.language));
     break;
   }
   default:
