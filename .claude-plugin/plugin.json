@@ -1,0 +1,10 @@
+{
+  "name": "engstickler",
+  "version": "0.1.0",
+  "description": "Keeps the technical English an agent writes correct and faithful to what the user meant, for users who talk to the agent in another language.",
+  "author": {
+    "name": "non4me",
+    "url": "https://github.com/non4me"
+  },
+  "license": "Apache-2.0"
+}

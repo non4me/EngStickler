@@ -1,0 +1,120 @@
+{
+  "about": "Calques and misused phrases found in English written by speakers of Russian, each with the form to use instead. `find` is a case-insensitive regular expression, narrowed to the contexts in which the phrase is an error. A match is a prompt to reread the phrase, not proof of an error.",
+  "calques": [
+    {
+      "find": "\\bstand(s|ing)? (in|on)\\b(?! for)",
+      "use": "is in, is kept in, is set out in",
+      "why": "In English, \"stand in\" means \"replace\" and \"stand on\" means \"insist on\", as in \"stand on ceremony\"; neither means \"be located in\"."
+    },
+    {
+      "find": "\\bstand(s|ing)? as\\b",
+      "use": "is",
+      "why": "\"stands as\" is a calque of «стоит как»."
+    },
+    {
+      "find": "\\bcarr(y|ies|ied|ying) out\\b(?!\\s*[,;:])",
+      "use": "implements, is implemented",
+      "why": "Said of a rule or a node, \"carry out\" is a calque of «выполнять»; a rule is implemented, a task is carried out."
+    },
+    {
+      "find": "\\b(holds?|held) (the|a|an|its|their|each|all|no|nothing|what|code|itself)\\b(?![^.!?]*\\b(together|to the)\\b)",
+      "use": "contains, is stored in; or \"is true\", \"applies\"",
+      "why": "\"hold\" means both \"contain\" and \"be true\"; in a text where both senses occur, a reader cannot tell which is meant."
+    },
+    {
+      "find": "(?<!same )\\banswer(s|ed|ing)? for\\b",
+      "use": "is responsible for, is accountable for",
+      "why": "\"answer for\" is a calque of «отвечать за»; in English it suggests being punished for wrongdoing."
+    },
+    {
+      "find": "\\bat (a|the) (commit|push|edit)s?\\b",
+      "use": "on a commit, on a push, after each edit",
+      "why": "\"at a commit\" is a calque of «при коммите»."
+    },
+    {
+      "find": "\\bthe one (source|place|way)\\b",
+      "use": "the single source, the only judgement",
+      "why": "\"the one\" also reads as \"the right one\"; \"single source of truth\" is the fixed phrase."
+    },
+    {
+      "find": "\\bso,? not\\b",
+      "use": "So a rule says not X but Y",
+      "why": "A sentence with no verb, \"So not X, but Y\", is a calque of «Так, не X, а Y»."
+    },
+    {
+      "find": "\\b\\w+ (included|excepted|left out)\\s*[,.;:)]",
+      "use": "including …, except …",
+      "why": "An absolute construction such as \"those of the archive included\" is a calque; English puts \"including\" or \"except\" first."
+    },
+    {
+      "find": "\\bis made of\\b",
+      "use": "consists of",
+      "why": "\"is made of\" is said of a material; a document or a system consists of its parts."
+    },
+    {
+      "find": "\\brightly\\b",
+      "use": "correctly",
+      "why": "\"rightly\" means «справедливо, с полным правом», not «правильно»."
+    },
+    {
+      "find": "\\b(applied|carried out|read|kept) apart\\b",
+      "use": "separately",
+      "why": "\"apart\" after a verb is a calque of «порознь»."
+    },
+    {
+      "find": "\\bwritten so\\b",
+      "use": "written this way",
+      "why": "\"Written so\" is archaic."
+    },
+    {
+      "find": "\\bbinds? alike\\b",
+      "use": "binds equally",
+      "why": "\"alike\" after a verb is a calque of «одинаково»."
+    },
+    {
+      "find": "\\bat present\\b",
+      "use": "currently",
+      "why": "\"at present\" is a calque of «на настоящий момент» and reads as formal."
+    },
+    {
+      "find": "\\bha(s|ve) the status\\b",
+      "use": "is approved, its status is …",
+      "why": "\"has the status X\" is a calque of «имеет статус X»."
+    },
+    {
+      "find": "\\ba sort of\\b",
+      "use": "a kind of",
+      "why": "\"a sort of\" also means \"something like\", so a reader cannot tell whether a kind or a vague likeness is meant."
+    },
+    {
+      "find": "\\bat once\\b",
+      "use": "immediately; or all together",
+      "why": "\"at once\" means both «сразу» and «все одновременно», so a reader cannot tell which is meant."
+    },
+    {
+      "find": "\\b(two|three|four) (words )?running\\b|\\bor more running\\b",
+      "use": "in a row",
+      "why": "\"three words running\" is a calque of «три слова подряд»."
+    },
+    {
+      "find": "\\bin the words\\b",
+      "use": "in words, by the wording",
+      "why": "\"is said in the words\" is a calque of «говорится словами»."
+    },
+    {
+      "find": "\\bone step later\\b",
+      "use": "one step removed",
+      "why": "\"one step later\" is a calque of «на шаг позже»."
+    },
+    {
+      "find": "\\bcontracts (agrees|holds|is|exists|stands)\\b",
+      "use": "the contracts section …",
+      "why": "\"contracts\" used as the name of a section and followed by a singular verb reads as the plural noun with a verb that does not agree with it."
+    },
+    {
+      "find": "\\bfix(es|ed|ing)? (its|their|the) \\w+ in (the )?code\\b",
+      "use": "carry … into the code, freeze … in the code",
+      "why": "\"fix\" reads as «исправить», not «зафиксировать»."
+    }
+  ]
+}

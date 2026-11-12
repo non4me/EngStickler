@@ -1,0 +1,15 @@
+{
+  "name": "engstickler-marketplace",
+  "owner": {
+    "name": "non4me",
+    "url": "https://github.com/non4me"
+  },
+  "description": "EngStickler: correct technical English from an agent you talk to in your own language.",
+  "plugins": [
+    {
+      "name": "engstickler",
+      "source": "./",
+      "description": "Readers that check the agent's English, its meaning, and the errors it made before."
+    }
+  ]
+}

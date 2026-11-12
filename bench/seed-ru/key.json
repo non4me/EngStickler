@@ -1,0 +1,602 @@
+[
+  {
+    "num": "1.6.1",
+    "field": "title",
+    "kind": "calque",
+    "was": "What the checks hold, and when they run",
+    "proposed": "What the checks enforce, and when they run",
+    "why": "«hold» — калька «держат»; проверки по-английски «enforce»."
+  },
+  {
+    "num": "1.6.1",
+    "field": "text",
+    "kind": "ambiguity",
+    "was": "Every check is deterministic but the review of the code.",
+    "proposed": "Every check except the review of the code is deterministic.",
+    "why": "«but» после сказуемого сначала читается как «но», и фраза спотыкается."
+  },
+  {
+    "num": "1.6.1",
+    "field": "text",
+    "kind": "grammar",
+    "was": "those rules of the guidelines the table of checks lists",
+    "proposed": "the rules of the guidelines that the table of checks lists",
+    "why": "Два именных оборота подряд без «that» читаются с запинкой."
+  },
+  {
+    "num": "1.6.1",
+    "field": "text",
+    "kind": "ambiguity",
+    "was": "they also run after each of its edits",
+    "proposed": "the checks also run after each of its edits",
+    "why": "«they» ближе к «the tests or the code», чем к проверкам."
+  },
+  {
+    "num": "1.6.1",
+    "field": "text",
+    "kind": "collocation",
+    "was": "run at a push if the specification",
+    "proposed": "run on a push if the specification",
+    "why": "О событиях git говорят «on push», а «at a push» звучит неестественно."
+  },
+  {
+    "num": "1.6.1",
+    "field": "reason",
+    "kind": "collocation",
+    "was": "The tests run at a push rather than at a commit",
+    "proposed": "The tests run on a push rather than on a commit",
+    "why": "О событиях git говорят «on push» и «on commit»."
+  },
+  {
+    "num": "1.6.1",
+    "field": "reason",
+    "kind": "collocation",
+    "was": "No test runs at a push while",
+    "proposed": "No test runs on a push while",
+    "why": "О событиях git говорят «on push»."
+  },
+  {
+    "num": "1.6.1",
+    "field": "reason",
+    "kind": "calque",
+    "was": "so refusing costs nobody a judgement",
+    "proposed": "so a refusal requires nobody's judgement",
+    "why": "«costs nobody a judgement» — калька «ни от кого не требует суждения», звучит как «никому не стоит суждения»."
+  },
+  {
+    "num": "1.6.1",
+    "field": "reason",
+    "kind": "collocation",
+    "was": "is bypassed at the first chance",
+    "proposed": "is bypassed at the first opportunity",
+    "why": "Устойчивое выражение — «at the first opportunity»."
+  },
+  {
+    "num": "1.6.1",
+    "field": "reason",
+    "kind": "calque",
+    "was": "can be seen only at the edits, since a commit holds the test and the code together",
+    "proposed": "can be seen only edit by edit, since a commit contains the test and the code together",
+    "why": "«at the edits» и «holds» — кальки «при правках» и «содержит»."
+  },
+  {
+    "num": "3.1",
+    "field": "title",
+    "kind": "grammar",
+    "was": "What the sections share is agreed in contracts",
+    "proposed": "What the sections share is agreed in the contracts section",
+    "why": "Строчное \"contracts\" без артикля читается как «в договорах» (нарицательное множественное), а не как имя раздела."
+  },
+  {
+    "num": "3.1",
+    "field": "text",
+    "kind": "grammar",
+    "was": "Contracts agrees what the sections of the specification share:",
+    "proposed": "The contracts section agrees on what the sections of the specification share:",
+    "why": "Строчное \"contracts\" читается как множественное число, и \"Contracts agrees\" выглядит ошибкой согласования; к тому же \"agree\" здесь требует \"on\"."
+  },
+  {
+    "num": "3.1",
+    "field": "text",
+    "kind": "grammar",
+    "was": "What only one section needs, that section holds itself, except a term",
+    "proposed": "What only one section needs stays in that section, except a term",
+    "why": "\"that section holds itself\" буквально значит «раздел держит самого себя» — русский вынос дополнения вперёд."
+  },
+  {
+    "num": "3.1",
+    "field": "text",
+    "kind": "grammar",
+    "was": "Contracts exists where the rules of the specification share something",
+    "proposed": "The contracts section exists where the rules of the specification share something",
+    "why": "\"Contracts exists\" выглядит ошибкой согласования: строчное \"contracts\" читается как множественное число."
+  },
+  {
+    "num": "3.1",
+    "field": "text",
+    "kind": "calque",
+    "was": "It stands as a section of its own within the base specification.",
+    "proposed": "It is a section of its own within the base specification.",
+    "why": "\"stands as a section\" — калька «стоит/является»; достаточно \"is\"."
+  },
+  {
+    "num": "3.1",
+    "field": "text",
+    "kind": "ambiguity",
+    "was": "A specification with no term and nothing else shared needs none.",
+    "proposed": "A specification with no term and nothing else shared does not need it.",
+    "why": "\"needs none\" после \"no term and nothing else\" непонятно к чему относится — к терминам или к контрактам."
+  },
+  {
+    "num": "3.1",
+    "field": "reason",
+    "kind": "collocation",
+    "was": "or their own rules for one matter",
+    "proposed": "or make their own rules for the same matter",
+    "why": "Правила не \"coin\" (так говорят о словах), а «для одного и того же» — \"for the same matter\", не \"for one matter\"."
+  },
+  {
+    "num": "3.1",
+    "field": "reason",
+    "kind": "grammar",
+    "was": "Holding in contracts only what binds more than one section keeps contracts from answering for",
+    "proposed": "Keeping in the contracts section only what binds more than one section keeps that section from answering for",
+    "why": "Строчное \"contracts\" читается как «договоры», а \"Holding in\" — калька «держать в»; естественно \"Keeping in\"."
+  },
+  {
+    "num": "3.1",
+    "field": "reason",
+    "kind": "grammar",
+    "was": "Contracts exists only to agree what the parts",
+    "proposed": "The contracts section exists only to agree on what the parts",
+    "why": "\"Contracts exists\" выглядит ошибкой согласования, а \"agree\" здесь требует \"on\"."
+  },
+  {
+    "num": "7.13",
+    "field": "text",
+    "kind": "ambiguity",
+    "was": "in the ordinary case of its language",
+    "proposed": "with the ordinary capitalisation of its language",
+    "why": "case без letter читается как грамматический падеж, а о регистре букв пишут capitalisation."
+  },
+  {
+    "num": "7.13",
+    "field": "text",
+    "kind": "calque",
+    "was": "capitals may stand on one word or on two running (REST API).",
+    "proposed": "one word, or two in a row (REST API), may be set in capitals.",
+    "why": "«Заглавными могут стоять» передано дословно: capitals stand on a word не говорят, а two running без words непонятно."
+  },
+  {
+    "num": "7.13",
+    "field": "text",
+    "kind": "calque",
+    "was": "three words or more running",
+    "proposed": "three or more words in a row",
+    "why": "«Подряд» по-английски — in a row, а running после words знакомо только по three days running."
+  },
+  {
+    "num": "7.13",
+    "field": "text",
+    "kind": "calque",
+    "was": "is said in the words",
+    "proposed": "is made to stand out by the wording",
+    "why": "«Говорится словами» передано дословно, а said in the words по-английски бессмысленно."
+  },
+  {
+    "num": "7.13",
+    "field": "reason",
+    "kind": "collocation",
+    "was": "binds alike",
+    "proposed": "binds equally",
+    "why": "alike как наречие при binds неестественно, нужно equally."
+  },
+  {
+    "num": "7.13",
+    "field": "reason",
+    "kind": "grammar",
+    "was": "A word or two in capitals are most often",
+    "proposed": "One or two words in capitals are most often",
+    "why": "A word or two согласуется с единственным числом, и are рядом звучит как ошибка."
+  },
+  {
+    "num": "7.13",
+    "field": "reason",
+    "kind": "calque",
+    "was": "which no check tells from a word stressed",
+    "proposed": "which no check can tell apart from an emphasised word",
+    "why": "Постпозиция a word stressed — калька, а stressed — об ударении, тогда как о выделении — emphasised."
+  },
+  {
+    "num": "7.13",
+    "field": "reason",
+    "kind": "calque",
+    "was": "Three words running are seldom anything but stress.",
+    "proposed": "Three words in a row are seldom anything but emphasis.",
+    "why": "stress — ударение или напряжение, а выделение в тексте — emphasis."
+  },
+  {
+    "num": "7.13",
+    "field": "reason",
+    "kind": "grammar",
+    "was": "A run of abbreviations as long",
+    "proposed": "A run of abbreviations that long",
+    "why": "as long без второй части сравнения — калька «такой длины», нужно that long."
+  },
+  {
+    "num": "1.3.2",
+    "field": "text",
+    "kind": "calque",
+    "was": "the status indicates the combined state of the whole group of rules inside it",
+    "proposed": "the status sums up the state of all the rules inside it",
+    "why": "«indicates the combined state of the whole group» — нагромождение существительных, калька «является индикатором совокупного состояния»."
+  },
+  {
+    "num": "1.3.2",
+    "field": "text",
+    "kind": "calque",
+    "was": "the whole group has that status",
+    "proposed": "the section is a draft too",
+    "why": "Статус принадлежит разделу, а не «группе», и «has that status» — калька."
+  },
+  {
+    "num": "1.3.2",
+    "field": "reason",
+    "kind": "grammar",
+    "was": ", the code and the tests secondary in it.",
+    "proposed": ", with the code and the tests secondary.",
+    "why": "Оборот без глагола и с лишним «in it» читается как ошибка."
+  },
+  {
+    "num": "1.3.2",
+    "field": "reason",
+    "kind": "calque",
+    "was": "implementing it would fix its incompleteness in the code, or the code would be built on guesses",
+    "proposed": "implementing it would either lock its gaps into the code or build the code on guesses",
+    "why": "«fix» — ложный друг «закрепить»: по-английски это «исправить», и фраза читается наоборот."
+  },
+  {
+    "num": "1.3.2",
+    "field": "reason",
+    "kind": "calque",
+    "was": "also holds code and tests written earlier, which must be brought to the form the method describes",
+    "proposed": "also has code and tests written earlier, which must be brought into the form the method describes",
+    "why": "«holds code» — калька «содержит»; проект код «has», а к форме приводят «into»."
+  },
+  {
+    "num": "1.3.2",
+    "field": "reason",
+    "kind": "calque",
+    "was": "Only what a commit leaves alone is relieved",
+    "proposed": "Only what a commit leaves alone may keep its earlier form",
+    "why": "«is relieved» значит «испытывает облегчение»; это калька «послабление касается»."
+  },
+  {
+    "num": "1.3.2",
+    "field": "reason",
+    "kind": "calque",
+    "was": "A status of their own for sections and nodes lets",
+    "proposed": "Giving sections and nodes a status of their own lets",
+    "why": "Подлежащее «A status of their own for sections and nodes» — калька, носитель построит фразу от действия."
+  },
+  {
+    "num": "1.3.2",
+    "field": "reason",
+    "kind": "collocation",
+    "was": "without withdrawing its status",
+    "proposed": "without withdrawing its approval",
+    "why": "Статус не «withdraw»; отзывают одобрение, как и говорит сам метод."
+  },
+  {
+    "num": "6.1",
+    "field": "text",
+    "kind": "ambiguity",
+    "was": "Every link names what it means by a type.",
+    "proposed": "Every link names what it means through its type.",
+    "why": "\"what it means by a type\" читается как «что связь понимает под словом type»."
+  },
+  {
+    "num": "6.1",
+    "field": "text",
+    "kind": "ambiguity",
+    "was": "the linking node holds a condition the linked rule depends on",
+    "proposed": "the linking node states a condition the linked rule depends on",
+    "why": "\"holds\" рядом с \"condition\" читается как «условие выполняется»; «содержит условие» — \"states a condition\"."
+  },
+  {
+    "num": "6.1",
+    "field": "text",
+    "kind": "grammar",
+    "was": "the linking node, of an extension, changes the linked main rule",
+    "proposed": "the linking node, which belongs to an extension, changes the linked main rule",
+    "why": "Обособленное \"of an extension\" — калька «узел расширения», по-английски так не вставляют."
+  },
+  {
+    "num": "6.1",
+    "field": "text",
+    "kind": "ambiguity",
+    "was": "So it holds no link of another type to it.",
+    "proposed": "So the linking node has no link of another type to the linked one.",
+    "why": "Два \"it\" подряд — непонятно, у кого нет связи и к кому."
+  },
+  {
+    "num": "6.1",
+    "field": "text",
+    "kind": "grammar",
+    "was": "as an operator starting an export",
+    "proposed": "such as an operator starting an export",
+    "why": "\"as\" вместо \"such as\" перед примером — калька «как»."
+  },
+  {
+    "num": "6.1",
+    "field": "reason",
+    "kind": "collocation",
+    "was": "No check can grade it.",
+    "proposed": "No check can assess it.",
+    "why": "\"grade\" — «ставить оценку» (школьную); «оценить» здесь — \"assess\"."
+  },
+  {
+    "num": "6.1",
+    "field": "reason",
+    "kind": "calque",
+    "was": "is the same guess one step later",
+    "proposed": "is the same guess, one step further on",
+    "why": "«на шаг дальше» — не о времени; \"one step later\" звучит как «шагом позже»."
+  },
+  {
+    "num": "4.2",
+    "field": "text",
+    "kind": "grammar",
+    "was": "It does so in enough detail to be read only one way",
+    "proposed": "It does so in enough detail to be read in only one way",
+    "why": "Без предлога \"in\" оборот разговорный и спотыкается при чтении."
+  },
+  {
+    "num": "4.2",
+    "field": "text",
+    "kind": "ambiguity",
+    "was": "It never restates what they state.",
+    "proposed": "It never restates what those nodes state.",
+    "why": "Сразу после перечня \"exact values, examples and the edge cases\" местоимение \"they\" цепляется за него, а не за узлы базы."
+  },
+  {
+    "num": "4.2",
+    "field": "text",
+    "kind": "calque",
+    "was": "which stands in the section of the stack;",
+    "proposed": "which goes in the section on the stack;",
+    "why": "\"stands in the section of the stack\" — двойная калька «стоит в разделе стека»; естественно \"goes in the section on the stack\"."
+  },
+  {
+    "num": "4.2",
+    "field": "reason",
+    "kind": "collocation",
+    "was": "would leave the base binding nowhere",
+    "proposed": "would leave the base without force anywhere",
+    "why": "\"leave the base binding nowhere\" — калька «лишила бы силы везде», читается с запинкой."
+  },
+  {
+    "num": "4.2",
+    "field": "reason",
+    "kind": "collocation",
+    "was": "Read beside the nodes it implements, an appendix node restating them",
+    "proposed": "Read alongside the nodes it implements, an appendix node restating them",
+    "why": "Документы читают \"alongside\" друг друга, а \"beside\" — чисто пространственное «рядом»."
+  },
+  {
+    "num": "4.2",
+    "field": "reason",
+    "kind": "collocation",
+    "was": "a copy drifts from what it copies",
+    "proposed": "a copy drifts away from what it copies",
+    "why": "\"drift from\" без \"away\" звучит обрубленно; носитель скажет \"drifts away from\"."
+  },
+  {
+    "num": "4.2",
+    "field": "reason",
+    "kind": "ambiguity",
+    "was": "is found when that rule changes and is read beside it.",
+    "proposed": "is found when that rule changes, and is read alongside it.",
+    "why": "Без запятой \"and is read beside it\" прочитывается как продолжение \"that rule changes\", а \"beside\" — пространственное «рядом»."
+  },
+  {
+    "num": "9.1",
+    "field": "text",
+    "kind": "ambiguity",
+    "was": "the code implementing the specification outside its guidelines",
+    "proposed": "the code implementing the parts of the specification outside its guidelines",
+    "why": "outside its guidelines цепляется и к code, и к specification, а с the parts ясно, что исключены guidelines, а не место кода."
+  },
+  {
+    "num": "9.1",
+    "field": "text",
+    "kind": "collocation",
+    "was": "are not the system's code. A project's",
+    "proposed": "are not part of the system's code. A project's",
+    "why": "«Не являются кодом системы» по-английски — are not part of the system's code, иначе звучит как неудачное тождество."
+  },
+  {
+    "num": "9.1",
+    "field": "text",
+    "kind": "collocation",
+    "was": "Whether a file is the system's code",
+    "proposed": "Whether a file is part of the system's code",
+    "why": "Файл не «есть код системы», а входит в него: is part of."
+  },
+  {
+    "num": "9.1",
+    "field": "reason",
+    "kind": "calque",
+    "was": "what serves the work on the system",
+    "proposed": "whatever supports the work on the system",
+    "why": "«То, что обслуживает работу над системой» передано дословно: serves the work носитель не скажет, естественно supports the work."
+  },
+  {
+    "num": "9.1",
+    "field": "reason",
+    "kind": "ambiguity",
+    "was": "considered implemented only by its code and a passing test together",
+    "proposed": "considered implemented only when its code and a passing test are both present",
+    "why": "considered implemented by its code читается как «код считает правило реализованным», потому что агент при considered — тот, кто считает."
+  },
+  {
+    "num": "9.1",
+    "field": "reason",
+    "kind": "calque",
+    "was": "so the tests are on the side of the code",
+    "proposed": "so the tests fall on the code's side of that line",
+    "why": "«На стороне кода» передано дословно, а сторону границы по-английски называют fall on X's side of the line."
+  },
+  {
+    "num": "9.1",
+    "field": "reason",
+    "kind": "calque",
+    "was": "Where a file lives is the same to every check, so it draws that line.",
+    "proposed": "A file's location is the same for every check, so the location draws that line.",
+    "why": "«Одинаково для каждой проверки» — the same for, не to, а it неясно: файл это или его место."
+  },
+  {
+    "num": "1.2.6",
+    "field": "title",
+    "kind": "collocation",
+    "was": "The one source of truth is the specification",
+    "proposed": "The single source of truth is the specification",
+    "why": "Устойчивое выражение — «single source of truth», а «the one source» звучит как «тот самый источник»."
+  },
+  {
+    "num": "1.2.6",
+    "field": "text",
+    "kind": "collocation",
+    "was": "The one source of truth about the system",
+    "proposed": "The single source of truth about the system",
+    "why": "Устойчивое выражение — «single source of truth»."
+  },
+  {
+    "num": "1.2.6",
+    "field": "text",
+    "kind": "calque",
+    "was": "The code implements it and holds nothing of its own.",
+    "proposed": "The code implements it and contains nothing of its own.",
+    "why": "«holds» — калька «держит»; о содержимом кода говорят «contains»."
+  },
+  {
+    "num": "1.2.6",
+    "field": "text",
+    "kind": "collocation",
+    "was": "It is repaired when the rule is revised.",
+    "proposed": "The defect is fixed when the rule is revised.",
+    "why": "Дефект по-английски «fix», а не «repair», и «It» можно отнести и к правилу, и к дефекту."
+  },
+  {
+    "num": "1.2.6",
+    "field": "reason",
+    "kind": "calque",
+    "was": "which of them holds",
+    "proposed": "which of them is right",
+    "why": "«holds» для «верен» неясно: читается как «какой из них держится»."
+  },
+  {
+    "num": "1.2.6",
+    "field": "reason",
+    "kind": "grammar",
+    "was": "the disagreement is found by a machine",
+    "proposed": "any disagreement is found by a machine",
+    "why": "Определённый артикль указывает на конкретное расхождение, которого в тексте нет; нужно «any»."
+  },
+  {
+    "num": "7.7",
+    "field": "title",
+    "kind": "calque",
+    "was": "A node holds what is applied together, and nothing applied apart",
+    "proposed": "A node contains what is applied together, and nothing applied separately",
+    "why": "apart для «порознь» звучит странно, нужно separately, а holds двусмысленно рядом с hold в смысле «быть верным»."
+  },
+  {
+    "num": "7.7",
+    "field": "text",
+    "kind": "calque",
+    "was": "Requirements that a reader needs together, to carry out any one of them rightly, stand in one node.",
+    "proposed": "Requirements that a reader needs together to carry out any one of them correctly belong in one node.",
+    "why": "rightly значит «справедливо, по праву», а не «правильно», и stand in one node — калька «стоят в одном узле» вместо belong in."
+  },
+  {
+    "num": "7.7",
+    "field": "text",
+    "kind": "calque",
+    "was": "A requirement carried out rightly without the other requirements of its node stands in a node of its own.",
+    "proposed": "A requirement that can be carried out correctly without the other requirements of its node belongs in a node of its own.",
+    "why": "carried out rightly читается как «уже выполненное по праву», тогда как «правильно выполняется» — can be carried out correctly."
+  },
+  {
+    "num": "7.7",
+    "field": "reason",
+    "kind": "calque",
+    "was": "A requirement it needs that stands in another node",
+    "proposed": "A requirement it needs that is stated in another node",
+    "why": "stands in для «стоит в» — калька, а требование is stated in a node."
+  },
+  {
+    "num": "7.7",
+    "field": "reason",
+    "kind": "grammar",
+    "was": "is carried out where they narrow it.",
+    "proposed": "is carried out even where they narrow it.",
+    "why": "Пропущено «и там» (even), и без него фраза говорит, что мысль выполняют только там, где уточнения её сужают."
+  },
+  {
+    "num": "7.7",
+    "field": "reason",
+    "kind": "calque",
+    "was": "a node that holds requirements carried out apart does not say which of them the code carries out.",
+    "proposed": "a node that contains requirements carried out separately does not say which of them the code implements.",
+    "why": "apart для «порознь» — separately, а код правило implements, не carries out."
+  },
+  {
+    "num": "7.9",
+    "field": "title",
+    "kind": "ambiguity",
+    "was": "Naming rules",
+    "proposed": "Rules for naming",
+    "why": "В спецификации о правилах Naming rules читается как «как называть правила»."
+  },
+  {
+    "num": "7.9",
+    "field": "text",
+    "kind": "ambiguity",
+    "was": "a field used apart from its object",
+    "proposed": "a field used without its object",
+    "why": "apart from по-английски чаще значит «кроме», и фраза читается как «поле, используемое помимо своего объекта»."
+  },
+  {
+    "num": "7.9",
+    "field": "text",
+    "kind": "collocation",
+    "was": "Written so, the key may be a general word.",
+    "proposed": "Written this way, the key may be a general word.",
+    "why": "written so звучит архаично, естественно written this way."
+  },
+  {
+    "num": "7.9",
+    "field": "reason",
+    "kind": "collocation",
+    "was": "A general one there means",
+    "proposed": "There, a general name means",
+    "why": "a general one there — тяжёлое замещение с повисшим there, а носитель вынесет There вперёд и назовёт name."
+  },
+  {
+    "num": "7.9",
+    "field": "reason",
+    "kind": "collocation",
+    "was": "a sort of request in one log, a user's action in another and a sort of error in a third",
+    "proposed": "the kind of request in one log, the user's action in another and the kind of error in a third",
+    "why": "a sort of request разговорно значит «нечто вроде запроса», а «вид запроса» — the kind of request."
+  },
+  {
+    "num": "7.9",
+    "field": "reason",
+    "kind": "collocation",
+    "was": "Code font tells it from an ordinary word.",
+    "proposed": "Code font sets it apart from an ordinary word.",
+    "why": "tell X from Y требует подлежащего-человека («отличить»), а шрифт не tells, а sets apart."
+  }
+]
