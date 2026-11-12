@@ -34,13 +34,14 @@ script, because each file is compared with the last version the readers read.
 
 ## Status
 
-Stage 1: the plugin is built for its author's own use. So far, Russian is the only language that has a
-folder in `languages/`. Stage 2 will add a setup interview that configures the plugin for any language the
-user speaks, an assessment of a project's existing documents, and support both for published glossaries of
-technical terms and for the user's own style rules.
+Stage 1: the plugin is built for its author's own use. The `languages/` folder contains a folder for each
+of these languages: Russian, Czech, German, Spanish, French and Polish. Only the Russian calque list is
+based on errors found in real use. The other lists contain errors commonly made by speakers of those
+languages, and are not yet confirmed by errors found in real use.
 
-The checks recognise text as English by the proportion of Latin letters in it. So they cannot yet tell
-English from another language written in the Latin alphabet, such as Czech. Stage 2 will fix this.
+Stage 2 will add a setup interview that configures the plugin for any language the user speaks, an
+assessment of a project's existing documents, and support for published glossaries of technical terms
+and for the user's own style rules.
 
 ## Install
 
@@ -71,14 +72,23 @@ optional, and the defaults are in `lib/config.mjs`.
 
 ## Languages
 
-Everything specific to one of the languages users speak is kept in its own folder, `languages/<code>/`,
-and nowhere else:
+Everything specific to one of the languages users speak is kept in that language's folder,
+`languages/<code>/`, and nowhere else:
 
 - `language.json` names the language;
-- `calques.json` lists the calques found in English written by speakers of that language, each with the
-  form to use instead;
+- `calques.json` lists calques and false friends in English written by speakers of that language. Each
+  entry gives the form to use instead, an example of the error, and a corrected sentence;
+- `stopwords.txt` lists the language's most common function words, if the language is written in the Latin
+  alphabet;
 - `benchmark/` holds texts with known errors, and the answer key that the readers are measured against;
-- `test/` holds texts that the calque list must not flag.
+- `test/` holds what the tests expect of the language, such as sentences that must not be taken for
+  English.
+
+Files often contain text in both English and the user's language: for example, a quotation in the
+user's language inside an English document. Only the English text goes to the readers. A language written in
+another alphabet is distinguished from English by its letters. A language written in the Latin alphabet is
+distinguished from English by its function words: a passage counts as English when it contains more
+English function words than function words of the user's language.
 
 The plugin's source code names no language. To add a language, add its folder. Even without a calque list
 or a benchmark, English written by speakers of that language is still checked by the readers.

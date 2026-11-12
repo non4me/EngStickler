@@ -1,0 +1,89 @@
+{
+  "about": "Calques and false friends commonly found in English written by speakers of German, each with the form to use instead. The list is based on errors that speakers of German are generally known to make, and is not yet confirmed by errors found in real use. \"find\" is a case-insensitive regular expression. It must match \"example\", which contains the error, and must not match \"correct\".",
+  "calques": [
+    {
+      "find": "\\bactual (version|versions|state|status|situation|data|value|values|release|settings|configuration)\\b",
+      "use": "current",
+      "why": "German \"aktuell\" means \"current\". In English, \"actual\" means \"real\", as opposed to \"supposed\".",
+      "example": "Install the actual version of the plugin.",
+      "correct": "Install the current version of the plugin."
+    },
+    {
+      "find": "\\bactually (supported|available|used|running|in use|implemented|installed|valid)\\b",
+      "use": "currently",
+      "why": "German \"aktuell\" means \"currently\". In English, \"actually\" means \"in fact\".",
+      "example": "Only two formats are actually supported.",
+      "correct": "Only two formats are currently supported."
+    },
+    {
+      "find": "\\beventually,? (we|you|they|it|this|the \\w+) (can|could|may|might|should|would)\\b",
+      "use": "\"possibly\" or \"if necessary\"",
+      "why": "German \"eventuell\" means \"possibly\" or \"if necessary\". In English, \"eventually\" means \"in the end\".",
+      "example": "Eventually we can add a second reader.",
+      "correct": "If necessary, we can add a second reader."
+    },
+    {
+      "find": "\\b(become|becomes|became) (an?|the|this|that) (error|message|answer|response|result|email|notification|warning|reply)\\b",
+      "use": "get, receive",
+      "why": "German \"bekommen\" means \"get\" or \"receive\". In English, \"become\" means \"turn into\".",
+      "example": "You become an error when the file is missing.",
+      "correct": "You get an error when the file is missing."
+    },
+    {
+      "find": "\\bsince (\\d+|one|two|three|four|five|six|seven|eight|nine|ten|several|many|a few) (seconds|minutes|hours|days|weeks|months|years)\\b",
+      "use": "\"for\" before a length of time, \"since\" before a point in time",
+      "why": "German \"seit\" is followed by a length of time. In English, only a point in time follows \"since\", and a length of time follows \"for\".",
+      "example": "The test has failed since three days.",
+      "correct": "The test has failed for three days."
+    },
+    {
+      "find": "\\b(a|one|my|the|this) question to (you|him|her|them|the team|the owner|the user)\\b",
+      "use": "a question for",
+      "why": "German \"eine Frage an\", translated word for word, gives \"a question to\". In English, you have a question for someone.",
+      "example": "I have a question to the team.",
+      "correct": "I have a question for the team."
+    },
+    {
+      "find": "\\bconsequently (applied|used|followed|implemented|enforced|checked)\\b",
+      "use": "consistently",
+      "why": "German \"konsequent\" means \"consistent\". In English, \"consequently\" means \"as a result\".",
+      "example": "The rule is consequently applied to every file.",
+      "correct": "The rule is consistently applied to every file."
+    },
+    {
+      "find": "\\bconcrete (case|question|problem|situation|request|file|folder|user|project)\\b",
+      "use": "specific, particular",
+      "why": "German \"konkret\" means \"specific\". In English, \"concrete\" means \"tangible\", as opposed to \"abstract\".",
+      "example": "In this concrete case the hook stops the push.",
+      "correct": "In this particular case the hook stops the push."
+    },
+    {
+      "find": "\\bdepend(s|ed|ing|ent)? from\\b",
+      "use": "depend on",
+      "why": "German \"abhängen von\", translated word for word, gives \"depend from\". In English, \"depend\" is followed by \"on\".",
+      "example": "The result depends from the configuration.",
+      "correct": "The result depends on the configuration."
+    },
+    {
+      "find": "\\bmak(e|es|ing|ed|e a) (a |an )?(photo|picture|screenshot|snapshot)\\b",
+      "use": "take a photo, take a screenshot",
+      "why": "In English, you take a photo or a screenshot. \"Make\" is copied from the verb used in the writer's own language.",
+      "example": "Make a screenshot of the error.",
+      "correct": "Take a screenshot of the error."
+    },
+    {
+      "find": "\\b(informations|advices|softwares|feedbacks|equipments|knowledges|hardwares)\\b",
+      "use": "information, advice, software, feedback, equipment, knowledge, hardware (no plural)",
+      "why": "In English these nouns are uncountable and have no plural. The plural is copied from the writer's own language, where the corresponding nouns are countable.",
+      "example": "The log keeps all informations about the run.",
+      "correct": "The log keeps all the information about the run."
+    },
+    {
+      "find": "\\bhow (it|this|that|they|the \\w+) looks? like\\b",
+      "use": "what it looks like, or how it looks",
+      "why": "English uses either \"what … looks like\" or \"how … looks\". \"How … looks like\" mixes the two, following the pattern of the writer's own language.",
+      "example": "The page shows how the report looks like.",
+      "correct": "The page shows what the report looks like."
+    }
+  ]
+}

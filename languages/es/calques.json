@@ -1,0 +1,96 @@
+{
+  "about": "Calques and false friends commonly found in English written by speakers of Spanish, each with the form to use instead. The list is based on errors that speakers of Spanish are generally known to make, and is not yet confirmed by errors found in real use. \"find\" is a case-insensitive regular expression. It must match \"example\", which contains the error, and must not match \"correct\".",
+  "calques": [
+    {
+      "find": "\\bactual (version|versions|state|status|situation|data|value|values|release|settings|configuration)\\b",
+      "use": "current",
+      "why": "Spanish \"actual\" means \"current\". In English, \"actual\" means \"real\", as opposed to \"supposed\".",
+      "example": "Install the actual version of the plugin.",
+      "correct": "Install the current version of the plugin."
+    },
+    {
+      "find": "\\bactually (supported|available|used|running|in use|implemented|installed|valid)\\b",
+      "use": "currently",
+      "why": "Spanish \"actualmente\" means \"currently\". In English, \"actually\" means \"in fact\".",
+      "example": "Only two formats are actually supported.",
+      "correct": "Only two formats are currently supported."
+    },
+    {
+      "find": "\\beventually,? (we|you|they|it|this|the \\w+) (can|could|may|might|should|would)\\b",
+      "use": "\"possibly\" or \"if necessary\"",
+      "why": "Spanish \"eventualmente\" means \"possibly\" or \"if necessary\". In English, \"eventually\" means \"in the end\".",
+      "example": "Eventually we can add a second reader.",
+      "correct": "If necessary, we can add a second reader."
+    },
+    {
+      "find": "\\breali[sz](e|es|ed|ing) (a|an|the|this|that) (project|task|study|test|tests|migration|feature|change|plan|development|requirement)\\b",
+      "use": "carry out, implement, complete",
+      "why": "Spanish \"realizar\" means \"carry out\". In English, \"realize\" means \"become aware of\", and only rarely \"achieve\".",
+      "example": "We realized the migration in two steps.",
+      "correct": "We carried out the migration in two steps."
+    },
+    {
+      "find": "\\bassist(s|ed|ing)? (to|at) (a|an|the) (meeting|conference|presentation|session|course|talk|demo|review)\\b",
+      "use": "attend",
+      "why": "Spanish \"asistir a\" means \"attend\". In English, \"assist\" means \"help\".",
+      "example": "The owner assisted at the review.",
+      "correct": "The owner attended the review."
+    },
+    {
+      "find": "\\bsensible (data|information|field|fields|value|values|content|to)\\b",
+      "use": "sensitive",
+      "why": "Spanish \"sensible\" means \"sensitive\". In English, \"sensible\" means \"reasonable\".",
+      "example": "Never log sensible data.",
+      "correct": "Never log sensitive data."
+    },
+    {
+      "find": "\\bdepend(s|ed|ing|ent)? of\\b",
+      "use": "depend on",
+      "why": "Spanish \"depender de\", translated word for word, gives \"depend of\". In English, \"depend\" is followed by \"on\".",
+      "example": "The result depends of the configuration.",
+      "correct": "The result depends on the configuration."
+    },
+    {
+      "find": "\\bexplain(s|ed|ing)? (me|us|him|her|them)\\b",
+      "use": "explain to me",
+      "why": "Spanish \"explícame\" puts the person right after the verb, with no preposition. In English, \"explain\" needs \"to\" before the person.",
+      "example": "Explain me how the hook works.",
+      "correct": "Explain to me how the hook works."
+    },
+    {
+      "find": "\\bmak(e|es|ing|ed) (a|the|this|that) question\\b",
+      "use": "ask a question",
+      "why": "Spanish \"hacer una pregunta\", translated word for word, gives \"make a question\". In English, you ask a question.",
+      "example": "The setup makes a question about the language.",
+      "correct": "The setup asks a question about the language."
+    },
+    {
+      "find": "\\bin base (to|of)\\b",
+      "use": "based on",
+      "why": "Spanish \"en base a\", translated word for word, gives \"in base to\". In English, the phrase is \"based on\".",
+      "example": "The level is set in base to the measurement.",
+      "correct": "The level is set based on the measurement."
+    },
+    {
+      "find": "\\bsince (\\d+|one|two|three|four|five|six|seven|eight|nine|ten|several|many|a few) (seconds|minutes|hours|days|weeks|months|years)\\b",
+      "use": "\"for\" before a length of time, \"since\" before a point in time",
+      "why": "Spanish \"desde hace\" is followed by a length of time. In English, only a point in time follows \"since\", and a length of time follows \"for\".",
+      "example": "The test has failed since three days.",
+      "correct": "The test has failed for three days."
+    },
+    {
+      "find": "\\b(informations|advices|softwares|feedbacks|equipments|knowledges|hardwares)\\b",
+      "use": "information, advice, software, feedback, equipment, knowledge, hardware (no plural)",
+      "why": "In English these nouns are uncountable and have no plural. The plural is copied from the writer's own language, where the corresponding nouns are countable.",
+      "example": "The log keeps all informations about the run.",
+      "correct": "The log keeps all the information about the run."
+    },
+    {
+      "find": "\\bhow (it|this|that|they|the \\w+) looks? like\\b",
+      "use": "what it looks like, or how it looks",
+      "why": "English uses either \"what … looks like\" or \"how … looks\". \"How … looks like\" mixes the two, following the pattern of the writer's own language.",
+      "example": "The page shows how the report looks like.",
+      "correct": "The page shows what the report looks like."
+    }
+  ]
+}

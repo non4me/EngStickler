@@ -10,12 +10,13 @@ import { getBaseline, setBaseline, getSession, saveSession, newSession, updateSe
 import { refreshBaselines, loadSession, collectPending, writeChunks, recordListed, acceptPending, projectRoot } from "../lib/pending.mjs";
 import { loadCalques, instantFindings, formatInstant } from "../lib/instant.mjs";
 import { isCommit, isPush, movesHead, commitMessage, pushTarget, pushPending } from "../lib/git.mjs";
-import { isEnglishProse, passages, changedPassages, jsonStrings } from "../lib/extract.mjs";
+import { isEnglishProse, passages, changedPassages, jsonStrings, useLanguage } from "../lib/extract.mjs";
 import { warnings } from "../lib/log.mjs";
 
 const env = process.env;
 const cfg = loadConfig(env);
 const lang = languageInfo(cfg.language);
+useLanguage(lang?.code);
 const es = fileURLToPath(new URL("./es.mjs", import.meta.url));
 const terms = cfg.terms.map((t) => expandHome(t, env)).filter((t) => fs.existsSync(t));
 

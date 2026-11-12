@@ -6,9 +6,11 @@ import { loadConfig } from "../lib/config.mjs";
 import { markChecked, messageKey, sessionDir } from "../lib/store.mjs";
 import { acceptListed, collectPending, projectRoot } from "../lib/pending.mjs";
 import { appendErrors, warnings } from "../lib/log.mjs";
+import { useLanguage } from "../lib/extract.mjs";
 
 const env = process.env;
 const cfg = loadConfig(env);
+useLanguage(cfg.language);
 
 const readStdin = async () => {
   if (process.stdin.isTTY) return "";

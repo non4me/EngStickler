@@ -6,7 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { globToRegExp, walk } from "../lib/glob.mjs";
 import { DEFAULTS, classify } from "../lib/config.mjs";
-import { isEnglishProse, passages, changedPassages } from "../lib/extract.mjs";
+import { isEnglishProse, passages, changedPassages, useLanguage } from "../lib/extract.mjs";
 import { loadCalques, instantFindings } from "../lib/instant.mjs";
 
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), "es-unit-"));
@@ -124,28 +124,55 @@ import { LANGUAGES_DIR, languageFile, listLanguages, languageInfo } from "../lib
 
 const readIf = (file) => (fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null);
 
-test("languages: each folder describes its language; its calques compile, stay silent on its clean texts and flag its benchmark", () => {
+const calqueHits = (text, calques) => instantFindings(text, { calques, sentenceWords: 1000, article: false }).filter((f) => f.type === "calque");
+const clean = fs.readdirSync(new URL("clean/", import.meta.url)).map((f) => [f, fs.readFileSync(new URL(`clean/${f}`, import.meta.url), "utf8")]);
+
+test("languages: each folder describes its language; its calques compile, catch their examples and flag its benchmark", () => {
   assert.ok(listLanguages().length >= 1);
   for (const code of listLanguages()) {
     const info = languageInfo(code);
     assert.equal(info?.code, code, `languages/${code}/language.json names another code`);
     assert.ok(info.name, `languages/${code}/language.json has no name`);
     const calques = loadCalques(code);
-    for (const c of calques) assert.doesNotThrow(() => new RegExp(c.find, "gi"), `${code}: ${c.find}`);
-    const expect = JSON.parse(readIf(languageFile(code, "test", "expect.json")) ?? "{}");
-    for (const name of expect.noFalseAlarms ?? []) {
-      const text = fs.readFileSync(languageFile(code, "test", name), "utf8");
-      const found = instantFindings(text, { calques, sentenceWords: 1000, article: false }).filter((f) => f.type === "calque");
-      assert.deepEqual(found, [], `${code}: false alarms in ${name}`);
+    for (const c of calques) {
+      assert.doesNotThrow(() => new RegExp(c.find, "gi"), `${code}: ${c.find}`);
+      if (c.example) assert.equal(calqueHits(c.example, [c]).length > 0, true, `${code}: "${c.find}" misses its example`);
+      if (c.correct) assert.deepEqual(calqueHits(c.correct, [c]), [], `${code}: "${c.find}" flags its corrected sentence`);
     }
+    const expect = JSON.parse(readIf(languageFile(code, "test", "expect.json")) ?? "{}");
     const key = readIf(languageFile(code, "benchmark", "key.json"));
     if (key && expect.calquesFlagBenchmarkAtLeast) {
-      const flagged = JSON.parse(key).filter((k) => instantFindings(k.was, { calques, sentenceWords: 1000, article: false }).some((f) => f.type === "calque"));
+      const flagged = JSON.parse(key).filter((k) => calqueHits(k.was, calques).length);
       assert.ok(flagged.length >= expect.calquesFlagBenchmarkAtLeast, `${code}: flagged ${flagged.length}`);
     }
   }
   assert.equal(languageInfo("xx"), null);
   assert.equal(languageInfo("../lib"), null);
+});
+
+test("languages: no calque list flags the clean English texts", () => {
+  for (const code of listLanguages()) {
+    const calques = loadCalques(code);
+    for (const [name, text] of clean) assert.deepEqual(calqueHits(text, calques), [], `${code}: false alarms in test/clean/${name}`);
+  }
+});
+
+test("languages: a language in the Latin alphabet is not taken for English, and English still is", () => {
+  const english = [
+    "Reads the configuration from the user's folder.",
+    "This function checks whether the file exists and is valid.",
+    "Install from a local folder.",
+  ];
+  try {
+    for (const code of listLanguages()) {
+      useLanguage(code);
+      for (const s of english) assert.ok(isEnglishProse(s), `${code}: "${s}" not taken for English`);
+      const expect = JSON.parse(readIf(languageFile(code, "test", "expect.json")) ?? "{}");
+      for (const s of expect.notEnglish ?? []) assert.ok(!isEnglishProse(s), `${code}: "${s}" taken for English`);
+    }
+  } finally {
+    useLanguage(null);
+  }
 });
 
 test("languages: nothing outside languages/ names a language or a language's files", () => {

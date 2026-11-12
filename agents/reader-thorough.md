@@ -72,6 +72,9 @@ TWO READINGS: <none, or one line per phrase: - "<phrase>": <the readings>>
 LANGUAGE: <none, or one line per phrase: - "<phrase>" → "<replacement>" — <reason>>
 ```
 
+If a passage is not in English, it was sent to you by mistake. Write its heading and, on the next line,
+`NOT ENGLISH`, and go on to the next passage.
+
 Write nothing else: no summary, no praise, no advice beyond the three parts. Never list a phrase you judge
 correct: a line that ends with "fine" or "not an error" is noise the author has to read for no benefit.
 
