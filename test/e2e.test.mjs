@@ -142,6 +142,35 @@ test("stop: the readers run in the background; the end of a response is held bac
   assert.match(es(ctx, ["pending", "s1"]), /Nothing unread/);
 });
 
+test("es open: the batch is opened before the response ends, so the stop hook lets the response end and the agent's last message stays last", () => {
+  const ctx = setup();
+  hook(ctx, "session-start", { source: "startup" });
+  assert.match(es(ctx, ["open", "s1"]), /Nothing to read/);
+  const guide = path.join(ctx.proj, "docs", "guide.md");
+  const paras = [...ctx.paras];
+  paras[4] = "Paragraph four was written just before the agent asks the user a question.";
+  script(ctx, guide, paras.join("\n\n") + "\n");
+  const out = es(ctx, ["open", "s1"]);
+  assert.match(out, /batch 1\b/);
+  assert.match(out, /in the background/);
+  assert.match(out, /checked s1 1\b/);
+  const chunk = out.match(/- (\S+fast-1\.md)/)[1];
+  assert.match(fs.readFileSync(chunk, "utf8"), /asks the user a question/);
+  // The stop hook finds nothing unread, so it does not hold the response back.
+  assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out, null);
+  // The batch stays open until it is marked as read, and holds back a commit as any batch does.
+  assert.match(es(ctx, ["pending", "s1"]), /guide\.md/);
+  es(ctx, ["checked", "s1", "1"]);
+  assert.match(es(ctx, ["pending", "s1"]), /Nothing unread/);
+});
+
+test("session start: the procedure tells the agent to open the batch before its last message and to act on a report only after the user answers", () => {
+  const ctx = setup();
+  const text = hook(ctx, "session-start", { source: "startup" }).out.hookSpecificOutput.additionalContext;
+  assert.match(text, /open s1\b/);
+  assert.match(text, /after the user answers/);
+});
+
 test("stop: a sentence fixed in response to the readers' findings is read once more; a fix of that fix is accepted", () => {
   const ctx = setup();
   hook(ctx, "session-start", { source: "startup" });

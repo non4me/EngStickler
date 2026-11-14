@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { loadConfig, classify, expandHome, stateDir } from "../lib/config.mjs";
 import { languageInfo, listLanguages } from "../lib/languages.mjs";
 import { getSession, saveSession, newSession, updateSession, isChecked, markChecked, messageKey, sessionDir, knownPassages, passageKey, unreadFiles, keyOf } from "../lib/store.mjs";
-import { ensureSetUp, absorb, changedSince, loadSession, collectPending, writeChunks, withDepth, openBatch, acceptPending, projectRoot } from "../lib/pending.mjs";
+import { ensureSetUp, absorb, changedSince, loadSession, prepareBatch, readerLines, writeChunks, projectRoot } from "../lib/pending.mjs";
 import { loadCalques, instantFindings, formatInstant } from "../lib/instant.mjs";
 import { isCommit, isPush, movesHead, commitMessage, pushTarget, pushPending } from "../lib/git.mjs";
 import { isEnglishProse, passages, jsonStrings, useLanguage } from "../lib/extract.mjs";
@@ -32,10 +32,16 @@ const readerBrief = (root) =>
   (terms.length ? `, and the term files ${terms.join(", ")}` : "") +
   ".";
 
-function procedure() {
+function procedure(id) {
   const lines = [
     `EngStickler checks every English text you write for this user, who talks to you in ${lang.name}.`,
     `Write English that says what the user means; never translate word for word from ${lang.name}.`,
+    "",
+    "Keep your last message where the user can read it:",
+    `- Before the last message of a response, run: node "${es}" open ${id}. Start in the background the readers it names, then write the message. ` +
+      "The end of the response then has nothing to hold back, and nothing appears after your message.",
+    "- When a reader's report arrives while the user has not yet answered your last message, run nothing and write nothing. " +
+      "Act on the report after the user answers, before your next message to the user.",
     "",
     'When a hook holds back your response, a commit or a push with a message that begins "EngStickler:":',
     "1. Start the readers on each chunk file the hook's message names, in the background: " +
@@ -90,7 +96,7 @@ async function main() {
     if (fresh || !getSession(id, env)) saveSession(id, newSession(), env);
     // The first session in a project, and the first one at all, record the text that already exists.
     ensureSetUp(cwd, cfg, env);
-    return print({ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: procedure() } });
+    return print({ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: procedure(id) } });
   }
 
   if (event === "pre-edit") {
@@ -122,30 +128,16 @@ async function main() {
   if (event === "stop") {
     // The readers run in the background, so the end of a response is held back at most once, for the agent to start them.
     if (input.stop_hook_active) return;
-    const s = loadSession(id, env);
-    const pending = withDepth(collectPending({ sessionId: id, cwd, cfg, env }), s);
-    const part = (keep) => pending.map((f) => ({ ...f, passages: f.passages.filter((p) => keep(p.depth)) })).filter((f) => f.passages.length);
     // A fix of a fix that was already read again is accepted as it is.
-    acceptPending(part((d) => d > cfg.limits.rereads), env);
-    const toRead = part((d) => d <= cfg.limits.rereads);
-    updateSession(id, (x) => Object.assign(x, { touched: [], changed: [] }), env);
-    if (!toRead.length) return;
-    const dir = path.join(sessionDir(id, env), "chunks");
-    const n = openBatch(id, toRead, dir, env);
-    const chunks = writeChunks(toRead, path.join(dir, `b${n}`), cfg.limits.chunkWords);
-    const fast = chunks.filter((c) => !c.thorough);
-    const thorough = chunks.filter((c) => c.thorough);
+    const batch = prepareBatch({ sessionId: id, cwd, cfg, env });
+    if (!batch) return;
     const reason = [
-      `EngStickler: the English written in this response has not been read yet (batch ${n}).`,
+      `EngStickler: the English written in this response has not been read yet (batch ${batch.n}).`,
       "Start the readers in the background (run_in_background), and do not wait for them.",
-      fast.length ? `Fast check: run engstickler:reader on each of:\n${fast.map((c) => `- ${c.file} (${c.words} words)`).join("\n")}` : "",
-      thorough.length
-        ? `Thorough check (instruction files): run engstickler:reader and engstickler:reader-thorough in parallel on each of:\n${thorough.map((c) => `- ${c.file} (${c.words} words)`).join("\n")}`
-        : "",
-      readerBrief(projectRoot(cwd)),
+      ...readerLines(batch, { root: projectRoot(cwd), language: lang.name, terms }),
       "Then end your response.",
-      `When the readers report, follow the EngStickler procedure given at the start of the session, and mark the batch as read with: node "${es}" checked ${id} ${n}`,
-    ].filter(Boolean);
+      `When the readers report, follow the EngStickler procedure given at the start of the session, and mark the batch as read with: node "${es}" checked ${id} ${batch.n}`,
+    ];
     return print({ decision: "block", reason: reason.join("\n") });
   }
 

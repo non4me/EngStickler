@@ -36,6 +36,11 @@ background and ends the response without waiting, so the user does not wait for 
 the agent fixes what they found and marks the batch as read. A commit or a push is held back until every batch
 of the session is marked as read.
 
+The agent's last message of a response often asks the user a question, and should remain the last thing on the screen. So the
+agent opens the batch itself, with the command `open`, before it writes that message, and starts the readers at that point.
+At the end of the response the hook finds nothing left to read, and nothing appears after the message. A report
+that a reader sends while the user has not yet answered is acted on after the user answers.
+
 A sentence the agent fixed in response to the readers' findings is read once more. A further fix of that sentence is
 recorded as read without another reading, so that fixes do not send the text to the readers again and again.
 
@@ -110,6 +115,7 @@ or a benchmark, English written by speakers of that language is still checked by
 
 `node scripts/es.mjs <command>`:
 
+- `open <session>` opens a batch of the English text written so far in the current response, and names the readers to start;
 - `checked <session> [batch]...` records that the readers have read the given batches, or every open batch of
   the session when no batch is given;
 - `checked-commit <session>` records that a commit message has been read;
