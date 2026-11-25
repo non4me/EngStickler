@@ -88,6 +88,12 @@ The configuration file is `~/.claude/engstickler/config.json`. It must name the 
 code, for example `{"language": "ru"}`. Until it does, EngStickler checks nothing. Every other key is
 optional, and the defaults are in `lib/config.mjs`.
 
+The key `skipDirs` lists folders whose files EngStickler never checks. Each entry is an absolute path, or a
+path that starts with `~/`, which stands for the user's home folder. For example,
+`{"skipDirs": ["~/AppData/Local/Temp/claude"]}` excludes the scratch scripts that agents write in a
+temporary folder. The patterns in `project.exclude` and `user.exclude` cannot exclude such files. Those
+patterns are relative to a project or to `~/.claude`, and these files lie outside both.
+
 ## Languages
 
 Everything specific to one of the languages users speak is kept in that language's folder,

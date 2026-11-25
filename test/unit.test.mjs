@@ -61,6 +61,25 @@ test("classify: kind, instruction, article, and what is out of scope", () => {
   assert.equal(classify(path.join(home, ".claude", "plugins", "p", "README.md"), DEFAULTS, { env }), null);
 });
 
+test("classify: a file in a folder that skipDirs names is out of scope, wherever its root is", () => {
+  const home = tmp();
+  const env = { ENGSTICKLER_USER_HOME: home };
+  // A scratch script outside any git work tree: its root is its own folder, so no glob can exclude it.
+  const scratch = path.join(home, "AppData", "Local", "Temp", "claude", "id", "session", "scratchpad", "fix.mjs");
+  assert.equal(classify(scratch, DEFAULTS, { env }).kind, "code");
+  const cfg = { ...DEFAULTS, skipDirs: ["~/AppData/Local/Temp/claude"] };
+  assert.equal(classify(scratch, cfg, { env }), null);
+  assert.equal(classify(scratch, cfg, { env, root: path.dirname(scratch) }), null);
+  // Two skipped folders: one given as an absolute path inside a project, and one given with ~/ inside ~/.claude.
+  // A folder whose name merely starts with the same characters as a skipped folder's name stays in scope.
+  const proj = tmp();
+  const abs = { ...DEFAULTS, skipDirs: [path.join(proj, "notes"), "~/.claude/skills/old"] };
+  assert.equal(classify(path.join(proj, "notes", "a.md"), abs, { root: proj, env }), null);
+  assert.equal(classify(path.join(proj, "notes-old", "a.md"), abs, { root: proj, env }).kind, "markdown");
+  assert.equal(classify(path.join(home, ".claude", "skills", "old", "SKILL.md"), abs, { env }), null);
+  assert.equal(classify(path.join(home, ".claude", "skills", "new", "SKILL.md"), abs, { env }).instruction, true);
+});
+
 // Task 3: English passages
 
 test("isEnglishProse: English sentences yes; Russian, code and short labels no", () => {

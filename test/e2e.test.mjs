@@ -294,6 +294,34 @@ test("pre-edit and stop: a new file outside the project is read whole", () => {
   assert.match(fs.readFileSync(out.reason.match(/- (\S+fast-1\.md)/)[1], "utf8"), /written in this session/);
 });
 
+test("skipDirs: a file in a folder it names is never checked, whether the agent edits it or a command changes it; a file elsewhere still is", () => {
+  const ctx = setup();
+  const config = { language: "ru", skipDirs: ["~/AppData/Local/Temp/claude", path.join(ctx.proj, "notes")] };
+  fs.writeFileSync(path.join(ctx.env.ENGSTICKLER_HOME, "config.json"), JSON.stringify(config));
+  hook(ctx, "session-start", { source: "startup" });
+  const content = "// The tests run at a push, and the agent wrote this comment in this session.\nconst a = 1;\n";
+  // A scratch script, written with the edit tools outside any project.
+  const scratch = path.join(ctx.base, "home", "AppData", "Local", "Temp", "claude", "id", "session", "scratchpad", "fix.mjs");
+  hook(ctx, "pre-edit", { tool_name: "Write", tool_input: { file_path: scratch } });
+  fs.mkdirSync(path.dirname(scratch), { recursive: true });
+  fs.writeFileSync(scratch, content);
+  assert.equal(hook(ctx, "post-edit", { tool_name: "Write", tool_input: { file_path: scratch, content } }).out, null);
+  // A note inside the project, changed by a command the agent runs.
+  fs.mkdirSync(path.join(ctx.proj, "notes"), { recursive: true });
+  script(ctx, path.join(ctx.proj, "notes", "plan.md"), "The agent's plan, which only agents read, was written by a script.\n");
+  assert.equal(hook(ctx, "stop", { stop_hook_active: false }).out, null);
+  assert.match(es(ctx, ["pending", "s1"]), /Nothing unread/);
+  // The same text in a file outside those folders is checked as before.
+  const other = path.join(ctx.base, "other", "fix.mjs");
+  assert.match(hook(ctx, "post-edit", { tool_name: "Write", tool_input: { file_path: other, content } }).out.hookSpecificOutput.additionalContext, /"at a push"/);
+  hook(ctx, "pre-edit", { tool_name: "Write", tool_input: { file_path: other } });
+  fs.mkdirSync(path.dirname(other), { recursive: true });
+  fs.writeFileSync(other, content);
+  const text = fs.readFileSync(hook(ctx, "stop", { stop_hook_active: false }).out.reason.match(/- (\S+fast-1\.md)/)[1], "utf8");
+  assert.match(text, /other[\\/]fix\.mjs/);
+  assert.doesNotMatch(text, /scratchpad|plan\.md/);
+});
+
 test("post-edit: a known calque and a long sentence come back to the agent at once", () => {
   const ctx = setup();
   const { out } = hook(ctx, "post-edit", {
